@@ -143,12 +143,14 @@ chmod +x compile.sh run.sh
 
 The mission control interface is built using a custom pure-Java software 3D rendering pipeline and Swing, adhering to a high-contrast dark aerospace aesthetic:
 
-- **Interactive 3D Satellite Model (Center)**:
-  - **Full 3D Geometry**: Shaded multi-faceted 3D model featuring the central Thermal bus with gold foil MLI panels, dual Power solar array wings with cell divisions, a 3D parabolic Communication dish antenna on a gimbal mast, and an Attitude gyro stabilization ring with reaction wheels.
-  - **3D Orbit & Mouse Interaction**: Click and drag to orbit/rotate the satellite in 3D (pitch and yaw), scroll mouse wheel to zoom in/out, with gentle autonomous orbital rotation when idle.
-  - **Dynamic Shading & Health Glow**: Lambertian directional sunlight shading with real-time health glow (Nominal green, Warning amber, Critical pulsing red, Safe Mode blue, Failed dark grey).
-  - **3D-to-2D Projected Callout HUD**: Floating sci-fi callout badges linked directly to 3D component coordinates in space. Clicking any badge or component focuses that instrument in the telemetry chart.
-  - **3D Parallax Starfield**: Multi-depth starfield with rotational parallax.
+- **Multi-Mode Center Tactical Display**:
+  - **🛰 3D SATELLITE MODEL**: Full 3D shaded polygon mesh with interactive mouse orbit/drag, zoom, directional lighting, and 3D-to-2D projected telemetry callouts.
+  - **🌍 ORBIT GROUND TRACK & RADAR**: 2D equirectangular world map tracking the satellite's inclined orbital trajectory, sub-satellite position, day/night equator, and Deep Space Network (DSN) ground stations (Goldstone, Madrid, Canberra) with communication coverage cones.
+  - **📊 TACTICAL COCKPIT GAUGES**: Circular radial dial meters (Power Bus, Core Temp, Uplink Signal, Gyro Drift) and an overall Platform Health Score (0–100%) that makes status instantly readable to any outsider.
+- **AI Flight Director & 60-Second Guided Viva Tour**:
+  - Real-time plain-English briefing translating raw telemetry into clear human narratives.
+  - One-click `[ ★ 60-SEC VIVA TOUR ]` button that automatically steps through the entire presentation story (Nominal -> Fault Injection -> Warning Detection -> Critical Red Alert -> Automated Safe Mode Recovery -> Nominal restoration) with on-screen narration.
+- **Synthesized Sci-Fi Audio Synthesizer**: Pure Java in-memory waveform sound effects (`javax.sound.sampled`) producing tactile UI clicks, telemetry beeps, warning chirps, emergency critical klaxons, and safe mode recovery chimes with a one-click `[ 🔊 AUDIO ]` toggle.
 - **Flight Operations Header (North)**: Title branding, live UTC clock, Mission Elapsed Time (MET `T+ HH:MM:SS`), orbital flight dynamics strip (Altitude, Velocity, Inclination, Apogee/Perigee), and a pulsing hexagonal `StatusBanner`.
 - **Tactical Controls & Fault Injector (West)**: Scenario cards, Start/Pause/Reset playback controls, speed slider (1–10 ticks/sec), live Subsystem Health LED matrix, and manual anomaly injector.
 - **Live Telemetry & Spectrum Chart (East Top)**: Real-time telemetry line chart with soft glowing line effects, shaded area gradient fill, statistical badges (MIN, MAX, AVG), dashed warning threshold line, and interactive mouse crosshair inspection.
@@ -171,6 +173,7 @@ All screenshots are generated directly from the live Java application:
 | **6. Communication Blackout** | `docs/screenshots/06_communication_dropout.png` |
 | **7. Cascading Compound Failure** | `docs/screenshots/07_cascading_failure.png` |
 | **8. Mission Control Overview** | `docs/screenshots/08_main_dashboard_overview.png` |
+| **9. 2D Orbit Ground Track & Radar** | `docs/screenshots/09_orbit_ground_track_radar.png` |
 
 ---
 

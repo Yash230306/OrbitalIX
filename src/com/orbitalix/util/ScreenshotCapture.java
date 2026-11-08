@@ -40,7 +40,7 @@ public class ScreenshotCapture {
         DefaultSimulationController controller = new DefaultSimulationController();
         MainWindow window = new MainWindow(controller);
         window.pack();
-        window.setSize(new Dimension(1280, 800));
+        window.setSize(new Dimension(1380, 860));
         window.setLocationRelativeTo(null);
         window.setVisible(true);
 
@@ -79,8 +79,13 @@ public class ScreenshotCapture {
         stepSimulation(controller, 24);
         capture(window, "docs/screenshots/07_cascading_failure.png");
 
+        // 8. Capture 2D Orbit Ground Track view
+        controller.loadScenario(0);
+        stepSimulation(controller, 8);
+        capture(window, "docs/screenshots/09_orbit_ground_track_radar.png");
+
         window.dispose();
-        System.out.println("All 8 screenshots generated successfully in docs/screenshots/");
+        System.out.println("All screenshots generated successfully in docs/screenshots/");
     }
 
     private static void stepSimulation(DefaultSimulationController controller, int ticks) {

@@ -10,6 +10,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -83,9 +84,31 @@ public class HeaderPanel extends JPanel {
         centerPanel.add(orbitStrip);
         add(centerPanel, BorderLayout.CENTER);
 
-        // East: Status Banner
+        // East: Audio Toggle & Status Banner
+        JPanel eastPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 2));
+        eastPanel.setOpaque(false);
+
+        JButton audioBtn = new JButton("🔊 AUDIO ON");
+        audioBtn.setFont(Theme.FONT_MONO);
+        audioBtn.setBackground(new Color(0x18, 0x22, 0x45));
+        audioBtn.setForeground(Theme.ACCENT_CYAN);
+        audioBtn.setFocusPainted(false);
+        audioBtn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0x23, 0x31, 0x5C)),
+                BorderFactory.createEmptyBorder(6, 10, 6, 10)
+        ));
+        audioBtn.addActionListener(e -> {
+            SoundEffects.getInstance().toggleSound();
+            boolean on = SoundEffects.getInstance().isSoundEnabled();
+            audioBtn.setText(on ? "🔊 AUDIO ON" : "🔇 AUDIO OFF");
+            audioBtn.setForeground(on ? Theme.ACCENT_CYAN : Theme.TEXT_MUTED);
+            if (on) SoundEffects.getInstance().playClick();
+        });
+
         statusBanner = new StatusBanner();
-        add(statusBanner, BorderLayout.EAST);
+        eastPanel.add(audioBtn);
+        eastPanel.add(statusBanner);
+        add(eastPanel, BorderLayout.EAST);
 
         // Live UTC Clock updater
         Timer utcTimer = new Timer(1000, e -> {

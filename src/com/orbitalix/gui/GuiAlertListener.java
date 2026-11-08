@@ -19,5 +19,11 @@ public class GuiAlertListener implements AlertListener {
     public void onAnomaly(Anomaly anomaly) {
         String message = anomaly.getSensor().getId() + " - " + anomaly.getMessage();
         alertLogPanel.appendAlert(anomaly.getSeverity(), message);
+
+        if (anomaly.getSeverity() == com.orbitalix.model.Severity.CRITICAL) {
+            SoundEffects.getInstance().playCritical();
+        } else if (anomaly.getSeverity() == com.orbitalix.model.Severity.WARNING) {
+            SoundEffects.getInstance().playWarning();
+        }
     }
 }
