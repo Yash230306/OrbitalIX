@@ -39,6 +39,10 @@ public final class EventLogger {
         write("INFO", message);
     }
 
+    public void warn(String message) {
+        write("WARN", message);
+    }
+
     public void error(String message) {
         write("ERROR", message);
     }

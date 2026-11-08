@@ -204,7 +204,7 @@ Do in this order. Each task must compile and run before starting the next.
 - [x] A1 (~40 min) Project setup + contract files (section 6) + `sensor`, `model`, `exception` packages
 - [x] A2 (~30 min) `detection` package + `alert` package + `EventLogger` singleton
 - [x] A3 (~30 min) `state` and `recovery` packages
-- [ ] A4 (~40 min) `simulation` package: engine, fault injector, factories, the 6 scenarios (section 10),
+- [x] A4 (~40 min) `simulation` package: engine, fault injector, factories, the 6 scenarios (section 10),
       `DefaultSimulationController`, and the CLI mode of `Main`. Test in CLI mode.
 - [ ] A5 (~60 min) GUI part 1: `Theme`, `MainWindow`, `Header + StatusBanner`, `ControlPanel`, `TelemetryPanel`,
       `LiveChartPanel`, `AlertLogPanel`, `GuiAlertListener`; the app opens and runs a scenario
@@ -246,16 +246,17 @@ architecture; class diagram; patterns; SOLID; sequence diagram; GUI screenshot; 
 conclusion and future work.
 
 ## HANDOFF STATE (AI: keep this updated. The next AI reads it first.)
-- Last updated by: Antigravity, 2026-11-09 01:39
-- Currently in progress: A3 finished. Starting A4.
-- Next step: Write simulation package (engine, fault injector, SubsystemFactory, SensorFactory, Scenario, the 6 scenarios, DefaultSimulationController, and CLI mode of Main). Then compile and run.
+- Last updated by: Antigravity, 2026-11-09 01:43
+- Currently in progress: A4 finished. Starting A5.
+- Next step: Write GUI part 1 (Theme, MainWindow, Header + StatusBanner, ControlPanel, TelemetryPanel, LiveChartPanel, AlertLogPanel, GuiAlertListener). Then compile, test GUI launch.
 - Compile command: `javac --release 17 -encoding UTF-8 -d out @sources.txt` after building sources.txt with forward-slash quoted paths (see compile.bat). Maven is not installed.
-- Run commands: GUI: (not yet)   Console: `java -cp out com.orbitalix.app.Main`
-- Decisions made: Plain javac, Java 17 release. Fixed CriticalState / EnterSafeModeAction throws clause. AlertListener and FaultType exist already. DetectionEngine, detectors, alert publisher/listeners, EventLogger, State classes, Recovery classes all implemented and tested in A3 smoke test. GitHub repository Yash230306/OrbitalIX created and linked to origin.
-- Known issues: none. A3 smoke test passes and completes cooling and recovery.
+- Run commands: GUI: `java -cp out com.orbitalix.app.Main`   Console: `java -cp out com.orbitalix.app.Main --cli`
+- Decisions made: SimulationEngine, FaultInjector, factories (SensorFactory, SubsystemFactory), Scenario (all 6 scenarios), DefaultSimulationController, and Main CLI/runner all implemented and tested across all 6 scenarios.
+- Known issues: none. All 6 scenarios pass CLI simulation with expected warnings, safe mode transitions, and unrecoverable fault handling.
 
 ## Progress log
 (AI: append one line per finished task, format `YYYY-MM-DD A1 done: <what exists now>`)
 2026-11-09 A1 done: javac scripts, section 6 contract, sensor, model, exception, and a smoke Main.
 2026-11-09 A2 done: detection (threshold, rate of change, z-score, engine), alert publisher, listeners, EventLogger.
 2026-11-09 A3 done: state and recovery packages, safe mode cooling, and passing smoke test.
+2026-11-09 A4 done: simulation package (engine, injector, factories, 6 scenarios, controller) and Main CLI runner.
