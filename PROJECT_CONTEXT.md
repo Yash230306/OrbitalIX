@@ -206,9 +206,9 @@ Do in this order. Each task must compile and run before starting the next.
 - [x] A3 (~30 min) `state` and `recovery` packages
 - [x] A4 (~40 min) `simulation` package: engine, fault injector, factories, the 6 scenarios (section 10),
       `DefaultSimulationController`, and the CLI mode of `Main`. Test in CLI mode.
-- [ ] A5 (~60 min) GUI part 1: `Theme`, `MainWindow`, `Header + StatusBanner`, `ControlPanel`, `TelemetryPanel`,
+- [x] A5 (~60 min) GUI part 1: `Theme`, `MainWindow`, `Header + StatusBanner`, `ControlPanel`, `TelemetryPanel`,
       `LiveChartPanel`, `AlertLogPanel`, `GuiAlertListener`; the app opens and runs a scenario
-- [ ] A6 (~45 min) GUI part 2: `SatellitePanel` (drawn satellite, starfield, glowing/pulsing parts, click to select)
+- [x] A6 (~45 min) GUI part 2: `SatellitePanel` (drawn satellite, starfield, glowing/pulsing parts, click to select)
       + polish and spacing
 - [ ] A7 (~30 min) Integration: run all 6 scenarios in CLI and GUI, fix bugs, write `README.md` (how to run, how to use),
       take 6-8 screenshots into `docs/screenshots/`
@@ -246,13 +246,13 @@ architecture; class diagram; patterns; SOLID; sequence diagram; GUI screenshot; 
 conclusion and future work.
 
 ## HANDOFF STATE (AI: keep this updated. The next AI reads it first.)
-- Last updated by: Antigravity, 2026-11-09 01:43
-- Currently in progress: A4 finished. Starting A5.
-- Next step: Write GUI part 1 (Theme, MainWindow, Header + StatusBanner, ControlPanel, TelemetryPanel, LiveChartPanel, AlertLogPanel, GuiAlertListener). Then compile, test GUI launch.
+- Last updated by: Antigravity, 2026-11-09 01:48
+- Currently in progress: A6 finished. Starting A7 (Integration, testing scenarios, README.md, screenshots).
+- Next step: Run all scenarios in CLI and GUI, verify integration, generate docs/screenshots, and write README.md.
 - Compile command: `javac --release 17 -encoding UTF-8 -d out @sources.txt` after building sources.txt with forward-slash quoted paths (see compile.bat). Maven is not installed.
 - Run commands: GUI: `java -cp out com.orbitalix.app.Main`   Console: `java -cp out com.orbitalix.app.Main --cli`
-- Decisions made: SimulationEngine, FaultInjector, factories (SensorFactory, SubsystemFactory), Scenario (all 6 scenarios), DefaultSimulationController, and Main CLI/runner all implemented and tested across all 6 scenarios.
-- Known issues: none. All 6 scenarios pass CLI simulation with expected warnings, safe mode transitions, and unrecoverable fault handling.
+- Decisions made: Full Swing+Java2D GUI implemented: Theme, HeaderPanel, StatusBanner (with pulsing critical animation), ControlPanel (scenarios, controls, speed, manual fault injector), SatellitePanel (twinkling starfield, glowing/pulsing subsystems, click-to-chart), LiveChartPanel (custom Java2D line chart with warning threshold), TelemetryPanel (colorized real-time JTable), AlertLogPanel (monospaced terminal style log), and GuiAlertListener. MainWindow wires MVC. Tested GUI instantiation and CLI modes.
+- Known issues: none.
 
 ## Progress log
 (AI: append one line per finished task, format `YYYY-MM-DD A1 done: <what exists now>`)
@@ -260,3 +260,5 @@ conclusion and future work.
 2026-11-09 A2 done: detection (threshold, rate of change, z-score, engine), alert publisher, listeners, EventLogger.
 2026-11-09 A3 done: state and recovery packages, safe mode cooling, and passing smoke test.
 2026-11-09 A4 done: simulation package (engine, injector, factories, 6 scenarios, controller) and Main CLI runner.
+2026-11-09 A5 done: GUI core (Theme, Header, StatusBanner, ControlPanel, TelemetryPanel, LiveChartPanel, AlertLogPanel, GuiAlertListener).
+2026-11-09 A6 done: SatellitePanel (Java2D starfield, glowing parts, pulse animation, interactive component selection).
