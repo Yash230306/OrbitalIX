@@ -8,6 +8,7 @@ import com.orbitalix.simulation.TickListener;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -16,9 +17,14 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Consumer;
@@ -26,50 +32,63 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 /**
- * Interactive Java2D visual model of the satellite against a twinkling deep-space starfield.
- * Each subsystem component glows and pulses in accordance with real-time operational health.
- * Demonstrates: Java2D custom rendering, Observer pattern (TickListener), user interaction (mouse selection).
+ * High-performance 3D interactive satellite visualization rendered entirely with Java2D.
+ * Features software perspective projection, Lambertian directional lighting, depth-sorting
+ * (Painter's algorithm), 3D starfield parallax, user orbit controls (mouse drag & zoom),
+ * and real-time 3D-to-2D projected telemetry callout HUDs.
+ * Demonstrates: Java2D 3D computer graphics pipeline, Observer pattern (TickListener), User Interaction.
  */
 public class SatellitePanel extends JPanel implements TickListener {
 
+    private final List<Polygon3D> baseMesh;
     private final Map<String, HealthStatus> subsystemHealth = new HashMap<>();
     private final Map<String, String> subsystemReadings = new HashMap<>();
     private Consumer<String> onSensorSelected;
 
-    // Starfield
-    private static final int STAR_COUNT = 75;
-    private final int[] starX = new int[STAR_COUNT];
-    private final int[] starY = new int[STAR_COUNT];
-    private final float[] starAlpha = new float[STAR_COUNT];
-    private final boolean[] starAlphaUp = new boolean[STAR_COUNT];
+    // 3D Camera & Orbit Controls
+    private double pitch = 0.28;
+    private double yaw = -0.52;
+    private double roll = 0.0;
+    private double fov = 520.0;
+    private double cameraDistance = 380.0;
+    private final Vec3 lightDir = new Vec3(0.55, 0.75, -0.65).normalize();
 
-    // Pulsing animation for critical parts
+    private Point dragStartPoint = null;
+    private boolean userInteracting = false;
+    private int idleTicksSinceInteraction = 0;
+
+    // 3D Starfield with depth
+    private static final int STAR_COUNT = 90;
+    private final Vec3[] stars = new Vec3[STAR_COUNT];
+    private final float[] starBrightness = new float[STAR_COUNT];
+
+    // Pulsing animation for critical state
     private float pulsePhase = 0f;
     private boolean pulseUp = true;
     private final Timer animationTimer;
 
-    // Component clickable bounding boxes
-    private Rectangle thermalBounds = new Rectangle();
-    private Rectangle powerLeftBounds = new Rectangle();
-    private Rectangle powerRightBounds = new Rectangle();
-    private Rectangle commBounds = new Rectangle();
-    private Rectangle attitudeBounds = new Rectangle();
+    // Interactive 2D Screen Callout Hitboxes
+    private final Map<String, Rectangle> calloutBounds = new HashMap<>();
 
     public SatellitePanel() {
         setBackground(Theme.BG_DARK);
-        setBorder(Theme.createBorder("ORBITAL PLATFORM STATUS"));
-        setPreferredSize(new Dimension(420, 400));
+        setBorder(Theme.createBorder("3D ORBITAL PLATFORM MONITOR"));
+        setPreferredSize(new Dimension(450, 420));
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        // Initialize starfield coordinates
-        Random rng = new Random(42);
+        baseMesh = Satellite3DModel.buildMesh();
+
+        // Initialize 3D starfield coordinates around the satellite
+        Random rng = new Random(101);
         for (int i = 0; i < STAR_COUNT; i++) {
-            starX[i] = rng.nextInt(600);
-            starY[i] = rng.nextInt(600);
-            starAlpha[i] = 0.2f + rng.nextFloat() * 0.7f;
-            starAlphaUp[i] = rng.nextBoolean();
+            double sx = (rng.nextDouble() - 0.5) * 800;
+            double sy = (rng.nextDouble() - 0.5) * 800;
+            double sz = 150 + rng.nextDouble() * 500;
+            stars[i] = new Vec3(sx, sy, sz);
+            starBrightness[i] = 0.3f + rng.nextFloat() * 0.7f;
         }
 
-        // Initialize default healths
+        // Initialize default health values
         subsystemHealth.put("Power", HealthStatus.NOMINAL);
         subsystemHealth.put("Thermal", HealthStatus.NOMINAL);
         subsystemHealth.put("Communication", HealthStatus.NOMINAL);
@@ -80,43 +99,98 @@ public class SatellitePanel extends JPanel implements TickListener {
         subsystemReadings.put("Communication", "96 %");
         subsystemReadings.put("Attitude", "0.00 deg/s");
 
-        // Starfield twinkle and pulse animation timer
-        animationTimer = new Timer(50, e -> {
-            for (int i = 0; i < STAR_COUNT; i++) {
-                if (starAlphaUp[i]) {
-                    starAlpha[i] += 0.03f;
-                    if (starAlpha[i] >= 0.9f) starAlphaUp[i] = false;
-                } else {
-                    starAlpha[i] -= 0.03f;
-                    if (starAlpha[i] <= 0.2f) starAlphaUp[i] = true;
+        // Mouse Drag to Orbit in 3D
+        MouseAdapter mouseHandler = new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                dragStartPoint = e.getPoint();
+                userInteracting = true;
+                idleTicksSinceInteraction = 0;
+
+                // Check click on 2D HUD callouts
+                for (Map.Entry<String, Rectangle> entry : calloutBounds.entrySet()) {
+                    if (entry.getValue().contains(e.getPoint())) {
+                        notifySelection(sensorIdForSubsystem(entry.getKey()));
+                        return;
+                    }
                 }
             }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                dragStartPoint = null;
+                userInteracting = false;
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (dragStartPoint != null) {
+                    int dx = e.getX() - dragStartPoint.x;
+                    int dy = e.getY() - dragStartPoint.y;
+                    yaw += dx * 0.008;
+                    pitch += dy * 0.008;
+                    dragStartPoint = e.getPoint();
+                    idleTicksSinceInteraction = 0;
+                    repaint();
+                }
+            }
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                // Zoom in / out
+                fov = Math.max(320.0, Math.min(780.0, fov - e.getWheelRotation() * 28.0));
+                repaint();
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Click to select subsystem
+                Point p = e.getPoint();
+                for (Map.Entry<String, Rectangle> entry : calloutBounds.entrySet()) {
+                    if (entry.getValue().contains(p)) {
+                        notifySelection(sensorIdForSubsystem(entry.getKey()));
+                        return;
+                    }
+                }
+            }
+        };
+
+        addMouseListener(mouseHandler);
+        addMouseMotionListener(mouseHandler);
+        addMouseWheelListener(mouseHandler);
+
+        // Real-time rendering animation loop (smooth 3D orbit & pulses)
+        animationTimer = new Timer(33, e -> {
+            // Gentle continuous idle rotation when user is not manually rotating
+            if (!userInteracting) {
+                idleTicksSinceInteraction++;
+                if (idleTicksSinceInteraction > 30) {
+                    yaw += 0.006;
+                    pitch = 0.24 + 0.08 * Math.sin(System.currentTimeMillis() * 0.0008);
+                }
+            }
+
+            // Pulse phase calculation
             if (pulseUp) {
-                pulsePhase += 0.07f;
+                pulsePhase += 0.06f;
                 if (pulsePhase >= 1.0f) pulseUp = false;
             } else {
-                pulsePhase -= 0.07f;
+                pulsePhase -= 0.06f;
                 if (pulsePhase <= 0.2f) pulseUp = true;
             }
             repaint();
         });
         animationTimer.start();
+    }
 
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                Point p = e.getPoint();
-                if (thermalBounds.contains(p)) {
-                    notifySelection("TEMP-CORE");
-                } else if (powerLeftBounds.contains(p) || powerRightBounds.contains(p)) {
-                    notifySelection("VOLT-BUS");
-                } else if (commBounds.contains(p)) {
-                    notifySelection("SIG-ANT");
-                } else if (attitudeBounds.contains(p)) {
-                    notifySelection("GYRO-PRI");
-                }
-            }
-        });
+    private String sensorIdForSubsystem(String sub) {
+        return switch (sub) {
+            case "Power" -> "VOLT-BUS";
+            case "Thermal" -> "TEMP-CORE";
+            case "Communication" -> "SIG-ANT";
+            case "Attitude" -> "GYRO-PRI";
+            default -> "TEMP-CORE";
+        };
     }
 
     private void notifySelection(String sensorId) {
@@ -151,131 +225,179 @@ public class SatellitePanel extends JPanel implements TickListener {
         int w = getWidth();
         int h = getHeight();
 
-        // 1. Draw Starfield
-        for (int i = 0; i < STAR_COUNT; i++) {
-            int sx = starX[i] % Math.max(1, w);
-            int sy = starY[i] % Math.max(1, h);
-            int alpha = (int) (starAlpha[i] * 255);
-            g2.setColor(new Color(255, 255, 255, Math.min(255, Math.max(0, alpha))));
-            g2.fillRect(sx, sy, (i % 5 == 0) ? 2 : 1, (i % 5 == 0) ? 2 : 1);
+        // 1. Draw 3D Space Background & Parallax Starfield
+        draw3DStarfield(g2, w, h);
+
+        // 2. Transform 3D mesh according to current pitch, yaw, roll
+        List<Polygon3D> transformedPolys = new ArrayList<>(baseMesh.size());
+        for (Polygon3D p : baseMesh) {
+            transformedPolys.add(p.transform(pitch, yaw, roll));
         }
 
-        // Center of satellite
-        int cx = w / 2;
-        int cy = h / 2 + 10;
+        // 3. Painter's Algorithm: Sort polygons by average Z (furthest drawn first)
+        Collections.sort(transformedPolys);
 
-        // Colors according to subsystem health
-        Color pwrColor = getGlowColor(subsystemHealth.get("Power"));
-        Color thmColor = getGlowColor(subsystemHealth.get("Thermal"));
-        Color comColor = getGlowColor(subsystemHealth.get("Communication"));
-        Color attColor = getGlowColor(subsystemHealth.get("Attitude"));
+        // 4. Render 3D Polygons
+        for (Polygon3D poly : transformedPolys) {
+            if (!poly.isVisible()) continue;
 
-        // 2. Solar Panels (Power) - Left and Right
-        int panelW = 75;
-        int panelH = 55;
-        powerLeftBounds = new Rectangle(cx - 150, cy - panelH / 2, panelW, panelH);
-        powerRightBounds = new Rectangle(cx + 75, cy - panelH / 2, panelW, panelH);
+            Polygon screenPoly = poly.toScreenPolygon(fov, cameraDistance, w, h);
+            HealthStatus status = subsystemHealth.get(poly.getSubsystemName());
+            Color dynamicColor = resolveDynamicColor(poly, status);
 
-        // Connecting truss
-        g2.setColor(new Color(0x3A, 0x4B, 0x7A));
-        g2.setStroke(new BasicStroke(3.0f));
-        g2.drawLine(cx - 150, cy, cx + 150, cy);
+            // Shaded face fill
+            Color shaded = poly.computeShadedColor(dynamicColor, lightDir);
+            g2.setColor(shaded);
+            g2.fill(screenPoly);
 
-        drawSolarPanel(g2, powerLeftBounds, pwrColor, "POWER (L)");
-        drawSolarPanel(g2, powerRightBounds, pwrColor, "POWER (R)");
+            // Glowing edge outline
+            Color edgeColor = resolveEdgeColor(poly, status);
+            g2.setColor(edgeColor);
+            g2.setStroke(poly.isEmissive() ? new BasicStroke(1.8f) : new BasicStroke(1.0f));
+            g2.draw(screenPoly);
+        }
 
-        // 3. Attitude Subsystem - Gyro stabilization ring at bottom
-        int gyroW = 90;
-        int gyroH = 26;
-        attitudeBounds = new Rectangle(cx - gyroW / 2, cy + 65, gyroW, gyroH);
-        g2.setColor(new Color(attColor.getRed(), attColor.getGreen(), attColor.getBlue(), 40));
-        g2.fillOval(attitudeBounds.x, attitudeBounds.y, gyroW, gyroH);
-        g2.setColor(attColor);
-        g2.setStroke(new BasicStroke(2.0f));
-        g2.drawOval(attitudeBounds.x, attitudeBounds.y, gyroW, gyroH);
-        drawSubLabel(g2, "ATTITUDE: " + subsystemReadings.getOrDefault("Attitude", ""), cx, cy + 105, attColor);
+        // 5. Draw 3D-to-2D Projected Telemetry Callouts
+        drawCallouts(g2, w, h);
 
-        // 4. Central Body (Thermal)
-        int bodyW = 90;
-        int bodyH = 100;
-        thermalBounds = new Rectangle(cx - bodyW / 2, cy - bodyH / 2, bodyW, bodyH);
-
-        g2.setColor(new Color(thmColor.getRed(), thmColor.getGreen(), thmColor.getBlue(), 55));
-        g2.fillRoundRect(thermalBounds.x, thermalBounds.y, bodyW, bodyH, 16, 16);
-        g2.setColor(thmColor);
-        g2.setStroke(new BasicStroke(2.5f));
-        g2.drawRoundRect(thermalBounds.x, thermalBounds.y, bodyW, bodyH, 16, 16);
-
-        // Inner core graphic
-        g2.setColor(new Color(0x18, 0x22, 0x45));
-        g2.fillRoundRect(cx - 30, cy - 30, 60, 60, 10, 10);
-        g2.setColor(thmColor);
-        g2.drawRoundRect(cx - 30, cy - 30, 60, 60, 10, 10);
-
-        drawSubLabel(g2, "THERMAL", cx, cy - 6, thmColor);
-        drawSubLabel(g2, subsystemReadings.getOrDefault("Thermal", ""), cx, cy + 14, Theme.TEXT_PRIMARY);
-
-        // 5. Communication Subsystem - Antenna dish on top
-        int dishW = 60;
-        int dishH = 24;
-        commBounds = new Rectangle(cx - dishW / 2, cy - 90, dishW, dishH + 20);
-
-        // Mast
-        g2.setColor(new Color(0x3A, 0x4B, 0x7A));
-        g2.setStroke(new BasicStroke(2.5f));
-        g2.drawLine(cx, cy - 50, cx, cy - 70);
-
-        // Dish arc
-        g2.setColor(comColor);
-        g2.setStroke(new BasicStroke(2.5f));
-        g2.drawArc(cx - dishW / 2, cy - 85, dishW, dishH, 0, 180);
-        // Feed horn
-        g2.drawLine(cx, cy - 73, cx, cy - 90);
-        g2.fillOval(cx - 3, cy - 93, 6, 6);
-
-        drawSubLabel(g2, "COMM: " + subsystemReadings.getOrDefault("Communication", ""), cx, cy - 100, comColor);
-
-        // Hint at bottom
-        g2.setFont(Theme.FONT_LABEL);
-        g2.setColor(Theme.TEXT_MUTED);
-        String hint = "Click any component to chart its telemetry";
-        FontMetrics fm = g2.getFontMetrics();
-        g2.drawString(hint, (w - fm.stringWidth(hint)) / 2, h - 8);
+        // 6. Draw Aerospace HUD Overlay (angles, coordinates, instructions)
+        drawHudOverlay(g2, w, h);
 
         g2.dispose();
     }
 
-    private void drawSolarPanel(Graphics2D g2, Rectangle r, Color color, String label) {
-        g2.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 45));
-        g2.fillRect(r.x, r.y, r.width, r.height);
-        g2.setColor(color);
-        g2.setStroke(new BasicStroke(1.8f));
-        g2.drawRect(r.x, r.y, r.width, r.height);
-
-        // Solar cell grid
-        g2.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 90));
-        g2.setStroke(new BasicStroke(1.0f));
-        g2.drawLine(r.x + r.width / 3, r.y, r.x + r.width / 3, r.y + r.height);
-        g2.drawLine(r.x + 2 * r.width / 3, r.y, r.x + 2 * r.width / 3, r.y + r.height);
-        g2.drawLine(r.x, r.y + r.height / 2, r.x + r.width, r.y + r.height / 2);
-
-        drawSubLabel(g2, label, r.x + r.width / 2, r.y + r.height + 14, color);
-    }
-
-    private void drawSubLabel(Graphics2D g2, String text, int centerX, int baselineY, Color color) {
-        g2.setFont(Theme.FONT_LABEL_BOLD);
-        FontMetrics fm = g2.getFontMetrics();
-        int tx = centerX - fm.stringWidth(text) / 2;
-        g2.setColor(color);
-        g2.drawString(text, tx, baselineY);
-    }
-
-    private Color getGlowColor(HealthStatus status) {
-        Color base = Theme.getHealthColor(status);
-        if (status == HealthStatus.CRITICAL) {
-            int alpha = (int) (140 + pulsePhase * 115);
-            return new Color(base.getRed(), base.getGreen(), base.getBlue(), Math.min(255, alpha));
+    private void draw3DStarfield(Graphics2D g2, int w, int h) {
+        for (int i = 0; i < STAR_COUNT; i++) {
+            Vec3 rotStar = stars[i].rotateY(yaw * 0.15).rotateX(pitch * 0.15);
+            Point pt = rotStar.project(fov, cameraDistance + 100, w, h);
+            if (pt.x >= 0 && pt.x < w && pt.y >= 0 && pt.y < h) {
+                int alpha = (int) (starBrightness[i] * 230);
+                g2.setColor(new Color(230, 240, 255, Math.min(255, Math.max(30, alpha))));
+                int sz = (i % 7 == 0) ? 2 : 1;
+                g2.fillRect(pt.x, pt.y, sz, sz);
+            }
         }
-        return base;
+    }
+
+    private void drawCallouts(Graphics2D g2, int w, int h) {
+        calloutBounds.clear();
+
+        // 3D Anchor positions for each subsystem
+        renderSingleCallout(g2, w, h, "Power", new Vec3(-145, 0, 0), "PWR", -110, -35);
+        renderSingleCallout(g2, w, h, "Thermal", new Vec3(0, 0, 55), "THM", 70, -25);
+        renderSingleCallout(g2, w, h, "Communication", new Vec3(0, 95, 0), "COM", 65, -60);
+        renderSingleCallout(g2, w, h, "Attitude", new Vec3(0, -85, 0), "ATT", -110, 45);
+    }
+
+    private void renderSingleCallout(Graphics2D g2, int w, int h, String subName,
+                                     Vec3 modelAnchor, String tag, int offsetX, int offsetY) {
+        Vec3 transformedAnchor = modelAnchor.rotateX(pitch).rotateY(yaw).rotateZ(roll);
+        Point screenPt = transformedAnchor.project(fov, cameraDistance, w, h);
+
+        int badgeX = screenPt.x + offsetX;
+        int badgeY = screenPt.y + offsetY;
+        int badgeW = 118;
+        int badgeH = 28;
+
+        // Keep within bounds
+        badgeX = Math.max(10, Math.min(w - badgeW - 10, badgeX));
+        badgeY = Math.max(25, Math.min(h - badgeH - 25, badgeY));
+
+        Rectangle bounds = new Rectangle(badgeX, badgeY, badgeW, badgeH);
+        calloutBounds.put(subName, bounds);
+
+        HealthStatus status = subsystemHealth.getOrDefault(subName, HealthStatus.NOMINAL);
+        Color statusColor = Theme.getHealthColor(status);
+        String reading = subsystemReadings.getOrDefault(subName, "--");
+
+        // Thin connector line from 3D projected point to HUD badge
+        g2.setColor(new Color(statusColor.getRed(), statusColor.getGreen(), statusColor.getBlue(), 120));
+        g2.setStroke(new BasicStroke(1.0f));
+        g2.drawLine(screenPt.x, screenPt.y, badgeX + badgeW / 2, badgeY + badgeH / 2);
+        g2.fillOval(screenPt.x - 2, screenPt.y - 2, 4, 4);
+
+        // Badge Container (glassmorphic dark box with neon border)
+        g2.setColor(new Color(0x10, 0x18, 0x30, 225));
+        g2.fillRoundRect(badgeX, badgeY, badgeW, badgeH, 6, 6);
+        g2.setColor(statusColor);
+        g2.drawRoundRect(badgeX, badgeY, badgeW, badgeH, 6, 6);
+
+        // Text
+        g2.setFont(Theme.FONT_MONO_BOLD);
+        g2.setColor(statusColor);
+        g2.drawString("[" + tag + "]", badgeX + 6, badgeY + 18);
+
+        g2.setFont(Theme.FONT_MONO);
+        g2.setColor(Theme.TEXT_PRIMARY);
+        g2.drawString(reading, badgeX + 46, badgeY + 18);
+
+        // Mini status indicator dot
+        g2.setColor(statusColor);
+        g2.fillOval(badgeX + badgeW - 14, badgeY + 9, 7, 7);
+    }
+
+    private void drawHudOverlay(Graphics2D g2, int w, int h) {
+        g2.setFont(Theme.FONT_MONO);
+        g2.setColor(Theme.TEXT_MUTED);
+
+        // Orientation telemetry readout
+        int pDeg = (int) Math.toDegrees(pitch) % 360;
+        int yDeg = (int) Math.toDegrees(yaw) % 360;
+        String orientText = String.format("ATTITUDE: PITCH %+03d° | YAW %+03d° | FOV %d", pDeg, yDeg, (int) fov);
+        g2.drawString(orientText, 12, h - 12);
+
+        // Interaction hint
+        String hint = "DRAG MOUSE TO ORBIT 3D · SCROLL TO ZOOM · CLICK CALLOUT TO CHART";
+        FontMetrics fm = g2.getFontMetrics();
+        g2.drawString(hint, w - fm.stringWidth(hint) - 12, h - 12);
+
+        // Aerospace HUD corner brackets
+        drawCornerBrackets(g2, 8, 20, w - 16, h - 38);
+    }
+
+    private void drawCornerBrackets(Graphics2D g2, int x, int y, int bw, int bh) {
+        g2.setColor(new Color(0x23, 0x31, 0x66, 120));
+        g2.setStroke(new BasicStroke(1.2f));
+        int len = 12;
+
+        // Top-left
+        g2.drawLine(x, y, x + len, y);
+        g2.drawLine(x, y, x, y + len);
+        // Top-right
+        g2.drawLine(x + bw, y, x + bw - len, y);
+        g2.drawLine(x + bw, y, x + bw, y + len);
+        // Bottom-left
+        g2.drawLine(x, y + bh, x + len, y + bh);
+        g2.drawLine(x, y + bh, x, y + bh - len);
+        // Bottom-right
+        g2.drawLine(x + bw, y + bh, x + bw - len, y + bh);
+        g2.drawLine(x + bw, y + bh, x + bw, y + bh - len);
+    }
+
+    private Color resolveDynamicColor(Polygon3D poly, HealthStatus status) {
+        if (status == null || status == HealthStatus.NOMINAL) {
+            return null; // use model's natural texture colors
+        }
+        Color statusColor = Theme.getHealthColor(status);
+        if (status == HealthStatus.CRITICAL) {
+            int alpha = (int) (130 + pulsePhase * 120);
+            return new Color(statusColor.getRed(), statusColor.getGreen(), statusColor.getBlue(), Math.min(255, alpha));
+        } else if (status == HealthStatus.WARNING) {
+            return new Color(statusColor.getRed(), statusColor.getGreen(), statusColor.getBlue(), 180);
+        } else if (status == HealthStatus.FAILED) {
+            return Theme.STATUS_FAILED;
+        }
+        return statusColor;
+    }
+
+    private Color resolveEdgeColor(Polygon3D poly, HealthStatus status) {
+        if (status == HealthStatus.CRITICAL) {
+            return Theme.STATUS_CRITICAL;
+        } else if (status == HealthStatus.WARNING) {
+            return Theme.STATUS_WARNING;
+        } else if (status == HealthStatus.FAILED) {
+            return Theme.STATUS_FAILED;
+        }
+        return poly.isEmissive() ? Theme.ACCENT_CYAN : new Color(0x35, 0x48, 0x75);
     }
 }

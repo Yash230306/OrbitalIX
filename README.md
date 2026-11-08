@@ -139,15 +139,21 @@ chmod +x compile.sh run.sh
 
 ---
 
-## 6. Dashboard User Interface
+## 6. Dashboard User Interface & 3D Visualization
 
-The mission control interface is built using Java2D and Swing, adhering to a high-contrast dark aerospace aesthetic:
+The mission control interface is built using a custom pure-Java software 3D rendering pipeline and Swing, adhering to a high-contrast dark aerospace aesthetic:
 
-- **Header**: Active title, mission clock (`T+ HH:MM:SS`), and dynamic `StatusBanner` that pulses red during `CRITICAL` states.
-- **Interactive Satellite View (Center)**: Hand-drawn Java2D schematic with twinkling starfield. Components (solar panels, thermal core, antenna dish, gyro ring) glow green/amber/red/grey based on real-time health. Clicking any component focuses that sensor in the chart.
-- **Controls (Left)**: One-click scenario cards, Start/Pause/Reset playback, speed control slider (1–10 ticks/sec), and manual live fault injector.
-- **Live Telemetry Table & Line Chart (Right)**: Real-time sensor readings table and hand-drawn line chart displaying the last 60 telemetry points with dashed warning limit lines.
-- **Mission Alerts Console (Bottom)**: Terminal-style monospaced log recording anomalies and autonomous recovery commands.
+- **Interactive 3D Satellite Model (Center)**:
+  - **Full 3D Geometry**: Shaded multi-faceted 3D model featuring the central Thermal bus with gold foil MLI panels, dual Power solar array wings with cell divisions, a 3D parabolic Communication dish antenna on a gimbal mast, and an Attitude gyro stabilization ring with reaction wheels.
+  - **3D Orbit & Mouse Interaction**: Click and drag to orbit/rotate the satellite in 3D (pitch and yaw), scroll mouse wheel to zoom in/out, with gentle autonomous orbital rotation when idle.
+  - **Dynamic Shading & Health Glow**: Lambertian directional sunlight shading with real-time health glow (Nominal green, Warning amber, Critical pulsing red, Safe Mode blue, Failed dark grey).
+  - **3D-to-2D Projected Callout HUD**: Floating sci-fi callout badges linked directly to 3D component coordinates in space. Clicking any badge or component focuses that instrument in the telemetry chart.
+  - **3D Parallax Starfield**: Multi-depth starfield with rotational parallax.
+- **Flight Operations Header (North)**: Title branding, live UTC clock, Mission Elapsed Time (MET `T+ HH:MM:SS`), orbital flight dynamics strip (Altitude, Velocity, Inclination, Apogee/Perigee), and a pulsing hexagonal `StatusBanner`.
+- **Tactical Controls & Fault Injector (West)**: Scenario cards, Start/Pause/Reset playback controls, speed slider (1–10 ticks/sec), live Subsystem Health LED matrix, and manual anomaly injector.
+- **Live Telemetry & Spectrum Chart (East Top)**: Real-time telemetry line chart with soft glowing line effects, shaded area gradient fill, statistical badges (MIN, MAX, AVG), dashed warning threshold line, and interactive mouse crosshair inspection.
+- **Real-Time Telemetry Matrix (East Bottom)**: Real-time readings table with icon badges, engineering units, alternating high-tech row styling, and click-to-focus integration.
+- **Mission Anomaly Console (South)**: Terminal-style monospaced log recording anomalies, autonomous recovery commands, with live counters for total alerts, warnings, and criticals.
 
 ---
 

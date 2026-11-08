@@ -1,7 +1,11 @@
 package com.orbitalix.gui;
 
+import com.orbitalix.model.HealthStatus;
 import com.orbitalix.simulation.FaultType;
 import com.orbitalix.simulation.SimulationController;
+import com.orbitalix.simulation.SimulationSnapshot;
+import com.orbitalix.simulation.SubsystemSnapshot;
+import com.orbitalix.simulation.TickListener;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -10,7 +14,9 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -21,29 +27,31 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 
 /**
- * Control panel for scenario selection, simulation execution control, and manual fault injection.
- * Demonstrates: association (talks to SimulationController contract), MVC separation.
+ * Tactical control console for scripted scenario execution, real-time playback speed,
+ * live subsystem health LED array, and manual anomaly injection.
+ * Demonstrates: association (talks to SimulationController contract), MVC separation, Observer pattern.
  */
-public class ControlPanel extends JPanel {
+public class ControlPanel extends JPanel implements TickListener {
 
     private final SimulationController controller;
     private final List<JButton> scenarioButtons = new ArrayList<>();
     private final JComboBox<String> subsystemCombo;
     private final JComboBox<FaultType> faultCombo;
+    private final Map<String, JLabel> subsystemLeds = new HashMap<>();
     private int selectedScenarioIndex = 0;
 
     public ControlPanel(SimulationController controller) {
         this.controller = controller;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(Theme.PANEL_BG);
-        setBorder(Theme.createBorder("MISSION CONTROLS"));
-        setPreferredSize(new Dimension(280, 600));
+        setBorder(Theme.createBorder("MISSION CONTROLS & INJECTOR"));
+        setPreferredSize(new Dimension(290, 600));
 
         // 1. Scenarios section
-        add(createSectionHeader("DEMO SCENARIOS"));
+        add(createSectionHeader("TACTICAL SCENARIOS"));
         JPanel scenarioCardPanel = new JPanel(new GridLayout(6, 1, 4, 4));
         scenarioCardPanel.setOpaque(false);
-        scenarioCardPanel.setMaximumSize(new Dimension(270, 200));
+        scenarioCardPanel.setMaximumSize(new Dimension(280, 205));
 
         List<String> scenarioNames = controller.getScenarioNames();
         for (int i = 0; i < scenarioNames.size(); i++) {
@@ -59,23 +67,23 @@ public class ControlPanel extends JPanel {
         }
         highlightSelectedScenario();
         add(scenarioCardPanel);
-        add(Box.createVerticalStrut(12));
+        add(Box.createVerticalStrut(10));
 
         // 2. Playback execution controls
         add(createSectionHeader("SIMULATION PLAYBACK"));
         JPanel playPanel = new JPanel(new GridLayout(1, 3, 6, 0));
         playPanel.setOpaque(false);
-        playPanel.setMaximumSize(new Dimension(270, 34));
+        playPanel.setMaximumSize(new Dimension(280, 34));
 
-        JButton startBtn = createStyledButton("▶ Start", true);
+        JButton startBtn = createStyledButton("▶ START", true);
         startBtn.setForeground(Theme.STATUS_NOMINAL);
         startBtn.addActionListener(e -> controller.start());
 
-        JButton pauseBtn = createStyledButton("❚❚ Pause", true);
+        JButton pauseBtn = createStyledButton("❚❚ PAUSE", true);
         pauseBtn.setForeground(Theme.STATUS_WARNING);
         pauseBtn.addActionListener(e -> controller.pause());
 
-        JButton resetBtn = createStyledButton("↺ Reset", true);
+        JButton resetBtn = createStyledButton("↺ RESET", true);
         resetBtn.setForeground(Theme.STATUS_CRITICAL);
         resetBtn.addActionListener(e -> controller.reset());
 
@@ -83,13 +91,13 @@ public class ControlPanel extends JPanel {
         playPanel.add(pauseBtn);
         playPanel.add(resetBtn);
         add(playPanel);
-        add(Box.createVerticalStrut(10));
+        add(Box.createVerticalStrut(8));
 
         // Speed Slider
         JPanel speedPanel = new JPanel(new BorderLayout(5, 2));
         speedPanel.setOpaque(false);
-        speedPanel.setMaximumSize(new Dimension(270, 50));
-        JLabel speedLabel = new JLabel("Speed: 2 ticks/sec");
+        speedPanel.setMaximumSize(new Dimension(280, 48));
+        JLabel speedLabel = new JLabel("Engine Speed: 2 ticks/sec");
         speedLabel.setFont(Theme.FONT_LABEL);
         speedLabel.setForeground(Theme.TEXT_MUTED);
 
@@ -100,21 +108,49 @@ public class ControlPanel extends JPanel {
         speedSlider.setPaintTicks(true);
         speedSlider.addChangeListener(e -> {
             int val = speedSlider.getValue();
-            speedLabel.setText("Speed: " + val + " ticks/sec");
+            speedLabel.setText("Engine Speed: " + val + " ticks/sec");
             controller.setSpeed(val);
         });
 
         speedPanel.add(speedLabel, BorderLayout.NORTH);
         speedPanel.add(speedSlider, BorderLayout.CENTER);
         add(speedPanel);
-        add(Box.createVerticalStrut(14));
+        add(Box.createVerticalStrut(10));
 
-        // 3. Fault Injection section
-        add(createSectionHeader("MANUAL FAULT INJECTION"));
+        // 3. Subsystem Health Quick Matrix LEDs
+        add(createSectionHeader("SUBSYSTEM HEALTH STATUS"));
+        JPanel ledGrid = new JPanel(new GridLayout(2, 2, 6, 6));
+        ledGrid.setOpaque(false);
+        ledGrid.setMaximumSize(new Dimension(280, 52));
+
+        String[] subNames = { "Power", "Thermal", "Communication", "Attitude" };
+        for (String sub : subNames) {
+            JPanel item = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+            item.setBackground(new Color(0x14, 0x1D, 0x3A));
+            item.setBorder(BorderFactory.createLineBorder(new Color(0x23, 0x31, 0x5C)));
+
+            JLabel dot = new JLabel("●");
+            dot.setFont(Theme.FONT_TITLE);
+            dot.setForeground(Theme.STATUS_NOMINAL);
+            subsystemLeds.put(sub, dot);
+
+            JLabel nameLbl = new JLabel(sub.substring(0, Math.min(4, sub.length())).toUpperCase());
+            nameLbl.setFont(Theme.FONT_LABEL_BOLD);
+            nameLbl.setForeground(Theme.TEXT_PRIMARY);
+
+            item.add(dot);
+            item.add(nameLbl);
+            ledGrid.add(item);
+        }
+        add(ledGrid);
+        add(Box.createVerticalStrut(10));
+
+        // 4. Fault Injection section
+        add(createSectionHeader("MANUAL ANOMALY INJECTION"));
         JPanel injectPanel = new JPanel();
         injectPanel.setLayout(new BoxLayout(injectPanel, BoxLayout.Y_AXIS));
         injectPanel.setOpaque(false);
-        injectPanel.setMaximumSize(new Dimension(270, 130));
+        injectPanel.setMaximumSize(new Dimension(280, 135));
 
         JLabel subLabel = new JLabel("Target Subsystem:");
         subLabel.setFont(Theme.FONT_LABEL);
@@ -125,7 +161,7 @@ public class ControlPanel extends JPanel {
         styleCombo(subsystemCombo);
         subsystemCombo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel faultLabel = new JLabel("Anomaly Fault Type:");
+        JLabel faultLabel = new JLabel("Anomaly Fault Model:");
         faultLabel.setFont(Theme.FONT_LABEL);
         faultLabel.setForeground(Theme.TEXT_MUTED);
         faultLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -134,10 +170,10 @@ public class ControlPanel extends JPanel {
         styleCombo(faultCombo);
         faultCombo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JButton injectBtn = createStyledButton("⚡ Inject Fault Now", true);
+        JButton injectBtn = createStyledButton("⚡ INJECT FAULT LIVE", true);
         injectBtn.setForeground(Theme.STATUS_WARNING);
         injectBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
-        injectBtn.setMaximumSize(new Dimension(270, 32));
+        injectBtn.setMaximumSize(new Dimension(280, 32));
         injectBtn.addActionListener(e -> {
             String selectedSub = (String) subsystemCombo.getSelectedItem();
             FaultType selectedType = (FaultType) faultCombo.getSelectedItem();
@@ -164,7 +200,7 @@ public class ControlPanel extends JPanel {
         JLabel lbl = new JLabel(title);
         lbl.setFont(Theme.FONT_LABEL_BOLD);
         lbl.setForeground(Theme.ACCENT_CYAN);
-        lbl.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
+        lbl.setBorder(BorderFactory.createEmptyBorder(2, 0, 4, 0));
         lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
         return lbl;
     }
@@ -186,7 +222,7 @@ public class ControlPanel extends JPanel {
         combo.setBackground(Theme.PANEL_CARD);
         combo.setForeground(Theme.TEXT_PRIMARY);
         combo.setFont(Theme.FONT_LABEL);
-        combo.setMaximumSize(new Dimension(270, 26));
+        combo.setMaximumSize(new Dimension(280, 26));
     }
 
     private void highlightSelectedScenario() {
@@ -198,6 +234,16 @@ public class ControlPanel extends JPanel {
             } else {
                 btn.setBackground(Theme.PANEL_CARD);
                 btn.setBorder(BorderFactory.createLineBorder(Theme.PANEL_BORDER, 1));
+            }
+        }
+    }
+
+    @Override
+    public void onTick(SimulationSnapshot snapshot) {
+        for (SubsystemSnapshot sub : snapshot.subsystems()) {
+            JLabel led = subsystemLeds.get(sub.name());
+            if (led != null) {
+                led.setForeground(Theme.getHealthColor(sub.status()));
             }
         }
     }

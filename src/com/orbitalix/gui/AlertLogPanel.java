@@ -5,8 +5,12 @@ import com.orbitalix.model.Severity;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -17,7 +21,8 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 /**
- * Terminal-style scrolling log for mission alerts, colored by severity.
+ * High-tech scrolling terminal telemetry console with live anomaly severity telemetry counts,
+ * monospaced ANSI styling, and buffer management.
  * Demonstrates: single responsibility (S in SOLID), Swing text components.
  */
 public class AlertLogPanel extends JPanel {
@@ -25,6 +30,11 @@ public class AlertLogPanel extends JPanel {
     private final JTextPane textPane;
     private final StyledDocument document;
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+
+    private final JLabel counterLabel;
+    private int criticalCount = 0;
+    private int warningCount = 0;
+    private int totalAlerts = 0;
 
     private Style styleTimestamp;
     private Style styleWarning;
@@ -34,8 +44,32 @@ public class AlertLogPanel extends JPanel {
     public AlertLogPanel() {
         super(new BorderLayout());
         setBackground(Theme.PANEL_BG);
-        setBorder(Theme.createBorder("MISSION ALERTS & LOGS"));
-        setPreferredSize(new Dimension(800, 150));
+        setBorder(Theme.createBorder("MISSION ANOMALY & FLIGHT LOG CONSOLE"));
+        setPreferredSize(new Dimension(800, 160));
+
+        // Sub-header toolbar with live anomaly statistics
+        JPanel toolbar = new JPanel(new BorderLayout());
+        toolbar.setOpaque(false);
+        toolbar.setBorder(BorderFactory.createEmptyBorder(0, 4, 4, 4));
+
+        counterLabel = new JLabel("LOG BUFFER ACTIVE // TOTAL: 0 | CRITICAL: 0 | WARNING: 0");
+        counterLabel.setFont(Theme.FONT_MONO);
+        counterLabel.setForeground(Theme.TEXT_MUTED);
+        toolbar.add(counterLabel, BorderLayout.WEST);
+
+        JButton clearBtn = new JButton("CLEAR TERMINAL");
+        clearBtn.setFont(Theme.FONT_MONO);
+        clearBtn.setBackground(new Color(0x18, 0x22, 0x45));
+        clearBtn.setForeground(Theme.TEXT_MUTED);
+        clearBtn.setFocusPainted(false);
+        clearBtn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0x23, 0x31, 0x5C)),
+                BorderFactory.createEmptyBorder(2, 8, 2, 8)
+        ));
+        clearBtn.addActionListener(e -> clear());
+        toolbar.add(clearBtn, BorderLayout.EAST);
+
+        add(toolbar, BorderLayout.NORTH);
 
         textPane = new JTextPane();
         textPane.setEditable(false);
@@ -46,11 +80,11 @@ public class AlertLogPanel extends JPanel {
         initStyles();
 
         JScrollPane scrollPane = new JScrollPane(textPane);
-        scrollPane.setBorder(null);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(0x1A, 0x24, 0x44)));
         scrollPane.getViewport().setBackground(new Color(0x06, 0x0A, 0x14));
         add(scrollPane, BorderLayout.CENTER);
 
-        logInfo("Mission control alert subsystem initialized.");
+        logInfo("Mission control telemetry logger online. Ready for telemetry stream.");
     }
 
     private void initStyles() {
@@ -72,6 +106,11 @@ public class AlertLogPanel extends JPanel {
     public void appendAlert(Severity severity, String text) {
         SwingUtilities.invokeLater(() -> {
             try {
+                totalAlerts++;
+                if (severity == Severity.CRITICAL) criticalCount++;
+                if (severity == Severity.WARNING) warningCount++;
+                updateCounter();
+
                 String timestamp = "[" + timeFormat.format(new Date()) + "] ";
                 document.insertString(document.getLength(), timestamp, styleTimestamp);
 
@@ -109,8 +148,17 @@ public class AlertLogPanel extends JPanel {
         SwingUtilities.invokeLater(() -> {
             try {
                 document.remove(0, document.getLength());
-                logInfo("Alert log cleared.");
+                criticalCount = 0;
+                warningCount = 0;
+                totalAlerts = 0;
+                updateCounter();
+                logInfo("Terminal log buffer flushed.");
             } catch (BadLocationException ignored) {}
         });
+    }
+
+    private void updateCounter() {
+        counterLabel.setText(String.format("LOG BUFFER ACTIVE // TOTAL: %d | CRITICAL: %d | WARNING: %d",
+                totalAlerts, criticalCount, warningCount));
     }
 }

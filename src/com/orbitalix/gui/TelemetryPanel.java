@@ -21,8 +21,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * Telemetry table displaying real-time readings, health statuses, and engineering units.
- * Demonstrates: Observer pattern (TickListener), encapsulation, Swing JTable customization.
+ * High-tech telemetry grid displaying live bus telemetry, engineering units, and visual health indicators.
+ * Demonstrates: Observer pattern (TickListener), Swing JTable advanced cell rendering.
  */
 public class TelemetryPanel extends JPanel implements TickListener {
 
@@ -30,13 +30,13 @@ public class TelemetryPanel extends JPanel implements TickListener {
     private final DefaultTableModel tableModel;
     private Consumer<String> onSensorSelected;
 
-    private static final String[] COLUMNS = { "Subsystem", "Sensor ID", "Value", "Unit", "Status" };
+    private static final String[] COLUMNS = { "SUBSYSTEM", "SENSOR ID", "VALUE", "UNIT", "STATUS" };
 
     public TelemetryPanel() {
         super(new BorderLayout());
         setBackground(Theme.PANEL_BG);
-        setBorder(Theme.createBorder("REAL-TIME TELEMETRY"));
-        setPreferredSize(new Dimension(380, 220));
+        setBorder(Theme.createBorder("REAL-TIME TELEMETRY MATRIX"));
+        setPreferredSize(new Dimension(420, 240));
 
         tableModel = new DefaultTableModel(COLUMNS, 0) {
             @Override
@@ -48,31 +48,44 @@ public class TelemetryPanel extends JPanel implements TickListener {
         table = new JTable(tableModel);
         table.setBackground(Theme.PANEL_CARD);
         table.setForeground(Theme.TEXT_PRIMARY);
-        table.setGridColor(Theme.PANEL_BORDER);
+        table.setGridColor(new Color(0x1A, 0x24, 0x46));
         table.setFont(Theme.FONT_MONO);
-        table.setRowHeight(22);
+        table.setRowHeight(24);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getTableHeader().setBackground(Theme.PANEL_BG);
+        table.getTableHeader().setBackground(new Color(0x0E, 0x14, 0x2A));
         table.getTableHeader().setForeground(Theme.ACCENT_CYAN);
         table.getTableHeader().setFont(Theme.FONT_LABEL_BOLD);
 
-        // Custom status cell renderer
+        // Custom high-tech cell renderer
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable tbl, Object value,
                     boolean isSelected, boolean hasFocus, int row, int column) {
                 Component c = super.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, column);
-                c.setBackground(isSelected ? new Color(0x23, 0x31, 0x66) : Theme.PANEL_CARD);
+
+                // Alternating row styling
+                if (isSelected) {
+                    c.setBackground(new Color(0x1C, 0x2B, 0x5E));
+                } else {
+                    c.setBackground(row % 2 == 0 ? Theme.PANEL_CARD : new Color(0x14, 0x1C, 0x38));
+                }
                 c.setForeground(Theme.TEXT_PRIMARY);
 
                 if (column == 4 && value != null) {
+                    String strVal = value.toString().replace("● ", "").replace("▲ ", "").replace("✖ ", "").replace("■ ", "");
                     try {
-                        HealthStatus st = HealthStatus.valueOf(value.toString());
+                        HealthStatus st = HealthStatus.valueOf(strVal);
                         c.setForeground(Theme.getHealthColor(st));
                         setFont(Theme.FONT_MONO_BOLD);
                     } catch (Exception ignored) {}
+                    setHorizontalAlignment(JLabel.CENTER);
                 } else if (column == 2) {
                     setHorizontalAlignment(JLabel.RIGHT);
+                    c.setForeground(Theme.ACCENT_CYAN);
+                    setFont(Theme.FONT_MONO_BOLD);
+                } else if (column == 1) {
+                    setHorizontalAlignment(JLabel.LEFT);
+                    setFont(Theme.FONT_LABEL_BOLD);
                 } else {
                     setHorizontalAlignment(JLabel.LEFT);
                 }
@@ -106,12 +119,19 @@ public class TelemetryPanel extends JPanel implements TickListener {
             tableModel.setRowCount(0);
             for (SubsystemSnapshot sub : snapshot.subsystems()) {
                 for (SensorSnapshot sensor : sub.sensors()) {
+                    String icon = switch (sensor.status()) {
+                        case NOMINAL -> "● ";
+                        case WARNING -> "▲ ";
+                        case CRITICAL -> "✖ ";
+                        case FAILED -> "■ ";
+                    };
+
                     tableModel.addRow(new Object[] {
                             sub.name(),
                             sensor.sensorId(),
                             String.format(Locale.US, "%7.2f", sensor.value()),
                             sensor.unit(),
-                            sensor.status().name()
+                            icon + sensor.status().name()
                     });
                 }
             }

@@ -33,10 +33,10 @@ public class MainWindow extends JFrame implements TickListener {
         this.controller = controller;
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(1260, 780));
-        setPreferredSize(new Dimension(1340, 840));
+        setMinimumSize(new Dimension(1320, 820));
+        setPreferredSize(new Dimension(1420, 890));
         getContentPane().setBackground(Theme.BG_DARK);
-        setLayout(new BorderLayout(6, 6));
+        setLayout(new BorderLayout(8, 8));
 
         // 1. North: Header & Status
         headerPanel = new HeaderPanel();
@@ -51,9 +51,9 @@ public class MainWindow extends JFrame implements TickListener {
         add(satellitePanel, BorderLayout.CENTER);
 
         // 4. East: Split with Live Chart on top, Telemetry Table on bottom
-        JPanel eastPanel = new JPanel(new GridLayout(2, 1, 0, 6));
+        JPanel eastPanel = new JPanel(new GridLayout(2, 1, 0, 8));
         eastPanel.setOpaque(false);
-        eastPanel.setPreferredSize(new Dimension(420, 600));
+        eastPanel.setPreferredSize(new Dimension(460, 600));
 
         chartPanel = new LiveChartPanel();
         telemetryPanel = new TelemetryPanel();
@@ -83,6 +83,7 @@ public class MainWindow extends JFrame implements TickListener {
             alertLogPanel.logInfo("System reset: telemetry and subsystems nominal.");
         }
         headerPanel.updateSnapshot(snapshot);
+        controlPanel.onTick(snapshot);
         satellitePanel.onTick(snapshot);
         chartPanel.onTick(snapshot);
         telemetryPanel.onTick(snapshot);
