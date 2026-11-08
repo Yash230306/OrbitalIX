@@ -1,5 +1,9 @@
 package com.orbitalix.model;
 
+import com.orbitalix.state.NominalState;
+import com.orbitalix.state.SpacecraftState;
+import com.orbitalix.util.EventLogger;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +17,7 @@ public class Spacecraft {
     private final String name;
     /** Composition: the subsystems are part of this spacecraft. They are not shared. */
     private final List<Subsystem> subsystems;
-    private String modeName = "NOMINAL";
+    private SpacecraftState state = new NominalState();
     private boolean safeMode;
     private boolean unrecoverable;
 
@@ -70,9 +74,10 @@ public class Spacecraft {
 
     public void markUnrecoverable() {
         this.unrecoverable = true;
-        this.modeName = "SAFE MODE";
+        this.safeMode = true;
         for (Subsystem subsystem : subsystems) {
-            if (subsystem.getHealth() == HealthStatus.CRITICAL) {
+            if (subsystem.getHealth() == HealthStatus.CRITICAL
+                    || subsystem.getHealth() == HealthStatus.WARNING) {
                 subsystem.forceHealth(HealthStatus.FAILED);
             }
         }
@@ -96,11 +101,20 @@ public class Spacecraft {
     }
 
     public String getModeName() {
-        return modeName;
+        return state.name();
     }
 
-    public void setModeName(String modeName) {
-        this.modeName = modeName;
+    public SpacecraftState getState() {
+        return state;
+    }
+
+    public void setState(SpacecraftState state) {
+        if (this.state != null && this.state.name().equals(state.name())) {
+            this.state = state;
+            return;
+        }
+        this.state = state;
+        EventLogger.getInstance().info("Mode is now " + state.name());
     }
 
     public boolean isSafeMode() {

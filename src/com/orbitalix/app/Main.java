@@ -1,5 +1,7 @@
 package com.orbitalix.app;
 
+import com.orbitalix.alert.ConsoleAlertListener;
+import com.orbitalix.alert.FileAlertListener;
 import com.orbitalix.exception.OrbitalIXException;
 import com.orbitalix.model.AttitudeSubsystem;
 import com.orbitalix.model.CommunicationSubsystem;
@@ -38,21 +40,23 @@ public class Main {
         List<Subsystem> subsystems = List.of(power, thermal, communication, attitude);
         Spacecraft spacecraft = new Spacecraft(subsystems);
         MissionControl control = new MissionControl(spacecraft);
+        control.addAlertListener(new ConsoleAlertListener());
+        control.addAlertListener(new FileAlertListener());
 
-        control.poll();
+        control.watch();
         TemperatureSensor core = (TemperatureSensor) thermal.getPrimarySensor();
         core.applyRamp(3);
-        System.out.println("OrbitalIX A1 smoke test");
+        System.out.println("OrbitalIX A3 smoke test");
         System.out.println("Spacecraft: " + spacecraft.getName() + " mode " + spacecraft.getModeName());
-        for (int tick = 1; tick <= 8; tick++) {
-            control.poll();
+        for (int tick = 1; tick <= 28; tick++) {
+            control.watch();
             Reading latest = core.getHistory().get(core.getHistory().size() - 1);
-            System.out.printf("tick %d  TEMP-CORE %5.1f C  thermal %s%n",
-                    tick, latest.getValue(), thermal.getHealth());
+            System.out.printf("tick %d  TEMP-CORE %5.1f C  thermal %-8s  mode %s%n",
+                    tick, latest.getValue(), thermal.getHealth(), spacecraft.getModeName());
         }
         if (control.getLastError() instanceof OrbitalIXException) {
             System.out.println("Last error: " + control.getLastError().getMessage());
         }
-        System.out.println("A1 smoke test OK");
+        System.out.println("A3 smoke test OK");
     }
 }
