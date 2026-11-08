@@ -210,7 +210,7 @@ Do in this order. Each task must compile and run before starting the next.
       `LiveChartPanel`, `AlertLogPanel`, `GuiAlertListener`; the app opens and runs a scenario
 - [x] A6 (~45 min) GUI part 2: `SatellitePanel` (drawn satellite, starfield, glowing/pulsing parts, click to select)
       + polish and spacing
-- [ ] A7 (~30 min) Integration: run all 6 scenarios in CLI and GUI, fix bugs, write `README.md` (how to run, how to use),
+- [x] A7 (~30 min) Integration: run all 6 scenarios in CLI and GUI, fix bugs, write `README.md` (how to run, how to use),
       take 6-8 screenshots into `docs/screenshots/`
 - [ ] A8 (tomorrow, ~30 min) Viva prep: AI explains every package in plain language; A answers 20 mock viva questions
 
@@ -246,12 +246,12 @@ architecture; class diagram; patterns; SOLID; sequence diagram; GUI screenshot; 
 conclusion and future work.
 
 ## HANDOFF STATE (AI: keep this updated. The next AI reads it first.)
-- Last updated by: Antigravity, 2026-11-09 01:48
-- Currently in progress: A6 finished. Starting A7 (Integration, testing scenarios, README.md, screenshots).
-- Next step: Run all scenarios in CLI and GUI, verify integration, generate docs/screenshots, and write README.md.
+- Last updated by: Antigravity, 2026-11-09 01:51
+- Currently in progress: A1 through A7 completed! Tasks A ready for presentation and viva.
+- Next step: A8 (Viva preparation) and B tasks (report, diagrams, PPT) remain for humans/team.
 - Compile command: `javac --release 17 -encoding UTF-8 -d out @sources.txt` after building sources.txt with forward-slash quoted paths (see compile.bat). Maven is not installed.
 - Run commands: GUI: `java -cp out com.orbitalix.app.Main`   Console: `java -cp out com.orbitalix.app.Main --cli`
-- Decisions made: Full Swing+Java2D GUI implemented: Theme, HeaderPanel, StatusBanner (with pulsing critical animation), ControlPanel (scenarios, controls, speed, manual fault injector), SatellitePanel (twinkling starfield, glowing/pulsing subsystems, click-to-chart), LiveChartPanel (custom Java2D line chart with warning threshold), TelemetryPanel (colorized real-time JTable), AlertLogPanel (monospaced terminal style log), and GuiAlertListener. MainWindow wires MVC. Tested GUI instantiation and CLI modes.
+- Decisions made: Complete system built across sensor, model, detection, alert, state, recovery, simulation, gui, and util packages. Full Swing/Java2D mission control dashboard with twinkling starfield, glowing/pulsing components, live charts, telemetry tables, alert log, scenario player, and manual fault injector. All 6 scenarios tested and passing in both GUI and CLI. Full README.md documentation and 8 real high-resolution screenshots generated in docs/screenshots/.
 - Known issues: none.
 
 ## Progress log
@@ -262,3 +262,4 @@ conclusion and future work.
 2026-11-09 A4 done: simulation package (engine, injector, factories, 6 scenarios, controller) and Main CLI runner.
 2026-11-09 A5 done: GUI core (Theme, Header, StatusBanner, ControlPanel, TelemetryPanel, LiveChartPanel, AlertLogPanel, GuiAlertListener).
 2026-11-09 A6 done: SatellitePanel (Java2D starfield, glowing parts, pulse animation, interactive component selection).
+2026-11-09 A7 done: full integration, all 6 scenarios verified, README.md written, and 8 screenshots captured.

@@ -99,30 +99,38 @@ public class TelemetryPanel extends JPanel implements TickListener {
 
     @Override
     public void onTick(SimulationSnapshot snapshot) {
-        int selectedRow = table.getSelectedRow();
-        String selectedSensor = selectedRow >= 0 ? (String) tableModel.getValueAt(selectedRow, 1) : null;
+        Runnable update = () -> {
+            int selectedRow = table.getSelectedRow();
+            String selectedSensor = selectedRow >= 0 ? (String) tableModel.getValueAt(selectedRow, 1) : null;
 
-        tableModel.setRowCount(0);
-        for (SubsystemSnapshot sub : snapshot.subsystems()) {
-            for (SensorSnapshot sensor : sub.sensors()) {
-                tableModel.addRow(new Object[] {
-                        sub.name(),
-                        sensor.sensorId(),
-                        String.format(Locale.US, "%7.2f", sensor.value()),
-                        sensor.unit(),
-                        sensor.status().name()
-                });
-            }
-        }
-
-        // Restore selection if applicable
-        if (selectedSensor != null) {
-            for (int r = 0; r < tableModel.getRowCount(); r++) {
-                if (selectedSensor.equals(tableModel.getValueAt(r, 1))) {
-                    table.setRowSelectionInterval(r, r);
-                    break;
+            tableModel.setRowCount(0);
+            for (SubsystemSnapshot sub : snapshot.subsystems()) {
+                for (SensorSnapshot sensor : sub.sensors()) {
+                    tableModel.addRow(new Object[] {
+                            sub.name(),
+                            sensor.sensorId(),
+                            String.format(Locale.US, "%7.2f", sensor.value()),
+                            sensor.unit(),
+                            sensor.status().name()
+                    });
                 }
             }
+
+            // Restore selection if applicable
+            if (selectedSensor != null) {
+                for (int r = 0; r < tableModel.getRowCount(); r++) {
+                    if (selectedSensor.equals(tableModel.getValueAt(r, 1))) {
+                        table.setRowSelectionInterval(r, r);
+                        break;
+                    }
+                }
+            }
+        };
+
+        if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+            update.run();
+        } else {
+            javax.swing.SwingUtilities.invokeLater(update);
         }
     }
 }
