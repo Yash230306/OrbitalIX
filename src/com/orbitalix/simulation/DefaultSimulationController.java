@@ -92,6 +92,11 @@ public class DefaultSimulationController implements SimulationController {
     }
 
     @Override
+    public void setLiveCondition(String subsystemName, double conditionOffset) {
+        engine.setLiveCondition(subsystemName, conditionOffset);
+    }
+
+    @Override
     public void addTickListener(TickListener listener) {
         engine.addTickListener(listener);
     }

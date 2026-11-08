@@ -29,4 +29,6 @@ public interface SimulationController {
     void addTickListener(TickListener listener);
 
     void addAlertListener(AlertListener listener);
+
+    void setLiveCondition(String subsystemName, double conditionOffset);
 }

@@ -114,7 +114,7 @@ public class FlightDirectorPanel extends JPanel implements TickListener {
                 }
                 case 2 -> {
                     updateBriefing("TOUR STEP 2: FAULT INJECTED",
-                            "Thermal runaway injected into satellite core. Temperature begins climbing rapidly.",
+                            "Thermal runaway injected into the spacecraft core. Temperature begins climbing rapidly.",
                             Theme.STATUS_WARNING);
                     SoundEffects.getInstance().playWarning();
                 }

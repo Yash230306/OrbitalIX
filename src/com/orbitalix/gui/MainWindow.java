@@ -9,7 +9,6 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 /**
- * Main mission control dashboard integrating 3D interactive satellite visualization,
+ * Main mission control dashboard integrating 3D interactive spacecraft visualization,
  * 2D orbital ground track mapping, tactical gauge cockpit, AI flight director,
  * real-time telemetry matrix, live spectrum chart, and alert console.
  * Demonstrates: MVC architecture (MainWindow is the View root), Observer pattern, aggregation.
@@ -31,8 +30,10 @@ public class MainWindow extends JFrame implements TickListener {
     private final HeaderPanel headerPanel;
     private final ControlPanel controlPanel;
     private final SatellitePanel satellitePanel;
+    private final Spacecraft2DPanel spacecraft2DPanel;
     private final OrbitMapPanel orbitMapPanel;
     private final SubsystemGaugesPanel gaugesPanel;
+    private final OopConceptsPanel oopConceptsPanel;
     private final FlightDirectorPanel flightDirectorPanel;
     private final LiveChartPanel chartPanel;
     private final TelemetryPanel telemetryPanel;
@@ -43,7 +44,7 @@ public class MainWindow extends JFrame implements TickListener {
     private final List<JButton> viewButtons = new ArrayList<>();
 
     public MainWindow(SimulationController controller) {
-        super("OrbitalIX · Satellite Health Mission Control");
+        super("OrbitalIX · Spacecraft Mission Control");
         this.controller = controller;
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -60,39 +61,56 @@ public class MainWindow extends JFrame implements TickListener {
         controlPanel = new ControlPanel(controller);
         add(controlPanel, BorderLayout.WEST);
 
-        // 3. Center: Multi-Mode Tactical View (3D Satellite | Orbit Map | Cockpit Gauges) + AI Flight Director
+        // 3. Center: Spacecraft, orbit, OOP learning, and system-health views.
         JPanel centerContainer = new JPanel(new BorderLayout(0, 6));
         centerContainer.setOpaque(false);
 
         // View Mode Switcher Toolbar
-        JPanel viewSwitcher = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+        JPanel viewSwitcher = new JPanel(new GridLayout(1, 5, 6, 0));
         viewSwitcher.setOpaque(false);
 
-        JButton btn3D = createViewButton("🛰 3D SATELLITE MODEL", true);
-        JButton btnMap = createViewButton("🌍 ORBIT GROUND TRACK", false);
-        JButton btnGauges = createViewButton("📊 TACTICAL GAUGES", false);
+        JButton btn3D = createViewButton("3D CRAFT", true);
+        JButton btn2D = createViewButton("2D CRAFT", false);
+        JButton btnMap = createViewButton("ORBIT MAP", false);
+        JButton btnOop = createViewButton("OOP GUIDE", false);
+        JButton btnGauges = createViewButton("HEALTH", false);
+        btn3D.setToolTipText("Inspect and rotate the spacecraft; click a system to view its telemetry.");
+        btn2D.setToolTipText("See a detailed 2D spacecraft with live-highlighted solar wings, dish and systems.");
+        btnMap.setToolTipText("Follow the spacecraft above Earth and see ground-station coverage.");
+        btnOop.setToolTipText("Learn how this project demonstrates object-oriented programming.");
+        btnGauges.setToolTipText("See the four spacecraft systems and their health at a glance.");
 
         btn3D.addActionListener(e -> switchView("3D", btn3D));
+        btn2D.addActionListener(e -> switchView("2D", btn2D));
         btnMap.addActionListener(e -> switchView("MAP", btnMap));
+        btnOop.addActionListener(e -> switchView("OOP", btnOop));
         btnGauges.addActionListener(e -> switchView("GAUGES", btnGauges));
 
         viewButtons.add(btn3D);
+        viewButtons.add(btn2D);
         viewButtons.add(btnMap);
+        viewButtons.add(btnOop);
         viewButtons.add(btnGauges);
 
         viewSwitcher.add(btn3D);
+        viewSwitcher.add(btn2D);
         viewSwitcher.add(btnMap);
+        viewSwitcher.add(btnOop);
         viewSwitcher.add(btnGauges);
         centerContainer.add(viewSwitcher, BorderLayout.NORTH);
 
         // Card Panels
         satellitePanel = new SatellitePanel();
+        spacecraft2DPanel = new Spacecraft2DPanel();
         orbitMapPanel = new OrbitMapPanel();
         gaugesPanel = new SubsystemGaugesPanel();
+        oopConceptsPanel = new OopConceptsPanel();
 
         centerCardPanel.setOpaque(false);
         centerCardPanel.add(satellitePanel, "3D");
+        centerCardPanel.add(spacecraft2DPanel, "2D");
         centerCardPanel.add(orbitMapPanel, "MAP");
+        centerCardPanel.add(oopConceptsPanel, "OOP");
         centerCardPanel.add(gaugesPanel, "GAUGES");
         centerContainer.add(centerCardPanel, BorderLayout.CENTER);
 
@@ -165,8 +183,10 @@ public class MainWindow extends JFrame implements TickListener {
         headerPanel.updateSnapshot(snapshot);
         controlPanel.onTick(snapshot);
         satellitePanel.onTick(snapshot);
+        spacecraft2DPanel.onTick(snapshot);
         orbitMapPanel.onTick(snapshot);
         gaugesPanel.onTick(snapshot);
+        oopConceptsPanel.onTick(snapshot);
         flightDirectorPanel.onTick(snapshot);
         chartPanel.onTick(snapshot);
         telemetryPanel.onTick(snapshot);

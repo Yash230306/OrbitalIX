@@ -49,6 +49,7 @@ public abstract class Sensor {
     private boolean dropout;
     private boolean corrupt;
     private boolean cooling;
+    private double userConditionOffset;
 
     protected Sensor(String id, String unit) {
         this(id, unit, 0);
@@ -124,7 +125,7 @@ public abstract class Sensor {
                 rampPerTick = 0;
             }
         }
-        double value = raw + accumulatedDrift + rampOffset;
+        double value = raw + accumulatedDrift + rampOffset + userConditionOffset;
         if (spike != 0) {
             value += spike;
             spike = 0;
@@ -215,6 +216,20 @@ public abstract class Sensor {
         cooling = false;
         failed = false;
         usingBackup = false;
+    }
+
+    public void setUserConditionOffset(double offset) {
+        if (!Double.isFinite(offset)) {
+            throw new IllegalArgumentException("Sensor condition offset must be finite");
+        }
+        this.userConditionOffset = offset;
+        if (backup != null) {
+            backup.userConditionOffset = offset;
+        }
+    }
+
+    public double getUserConditionOffset() {
+        return userConditionOffset;
     }
 
     public void activateBackup() {

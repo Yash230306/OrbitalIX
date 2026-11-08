@@ -32,7 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 /**
- * High-performance 3D interactive satellite visualization rendered entirely with Java2D.
+ * High-performance 3D interactive spacecraft visualization rendered entirely with Java2D.
  * Features software perspective projection, Lambertian directional lighting, depth-sorting
  * (Painter's algorithm), 3D starfield parallax, user orbit controls (mouse drag & zoom),
  * and real-time 3D-to-2D projected telemetry callout HUDs.
@@ -72,7 +72,7 @@ public class SatellitePanel extends JPanel implements TickListener {
 
     public SatellitePanel() {
         setBackground(Theme.BG_DARK);
-        setBorder(Theme.createBorder("3D ORBITAL PLATFORM MONITOR"));
+        setBorder(Theme.createBorder("3D SPACECRAFT SYSTEMS"));
         setPreferredSize(new Dimension(450, 420));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 

@@ -42,7 +42,7 @@ public class HeaderPanel extends JPanel {
         titleLabel.setFont(Theme.FONT_TITLE);
         titleLabel.setForeground(Theme.ACCENT_CYAN);
 
-        JLabel subtitleLabel = new JLabel("LEO ORBITAL PLATFORM HEALTH & AUTONOMOUS SURVIVAL SYSTEM");
+        JLabel subtitleLabel = new JLabel("SPACECRAFT HEALTH  ·  LIVE ORBIT  ·  AUTONOMOUS RECOVERY");
         subtitleLabel.setFont(Theme.FONT_LABEL);
         subtitleLabel.setForeground(Theme.TEXT_MUTED);
 

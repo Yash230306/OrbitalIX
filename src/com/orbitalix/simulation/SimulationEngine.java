@@ -78,6 +78,25 @@ public class SimulationEngine {
         faultInjector.inject(spacecraft, subsystemName, type);
     }
 
+    /**
+     * Applies a user-defined condition offset to every sensor in the named subsystem.
+     * Called each tick by the Custom Condition Builder GUI so the value persists until cleared.
+     * @param subsystemName  case-insensitive subsystem name (e.g. "Thermal", "Power")
+     * @param conditionOffset added to the raw sensor reading; 0 means nominal
+     */
+    public synchronized void setLiveCondition(String subsystemName, double conditionOffset) {
+        if (!Double.isFinite(conditionOffset)) {
+            throw new IllegalArgumentException("Condition offset must be finite");
+        }
+        Subsystem sub = spacecraft.findSubsystem(subsystemName);
+        if (sub == null) {
+            throw new IllegalArgumentException("Unknown subsystem: " + subsystemName);
+        }
+        for (Sensor s : sub.getSensors()) {
+            s.setUserConditionOffset(conditionOffset);
+        }
+    }
+
     public void addTickListener(TickListener listener) {
         tickListeners.add(listener);
     }

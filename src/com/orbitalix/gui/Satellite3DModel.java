@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Procedural 3D mesh generator for the OrbitalIX satellite.
+ * Procedural 3D mesh generator for the OrbitalIX spacecraft.
  * Generates geometric vertices and faces for the Thermal bus, Power solar arrays,
  * Communication parabolic dish, and Attitude gyro stabilization ring.
  * Demonstrates: Factory pattern (generates 3D mesh), procedural geometry, encapsulation.

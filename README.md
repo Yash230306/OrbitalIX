@@ -4,7 +4,7 @@
 [![GUI](https://img.shields.io/badge/GUI-Swing%20%2B%20Java2D-green.svg)]()
 [![Architecture](https://img.shields.io/badge/Architecture-MVC%20%2B%20Observer%20%2B%20Strategy-orange.svg)]()
 
-> **Live Mission-Control Dashboard & Autonomous Fault-Recovery Simulator for a Deep-Space Satellite.**  
+> **Live Mission-Control Dashboard & Autonomous Fault-Recovery Simulator for a Deep-Space Spacecraft.**
 > Built with pure Java 17 (Swing + Java2D) with zero external runtime dependencies.
 
 ---
@@ -144,18 +144,22 @@ chmod +x compile.sh run.sh
 The mission control interface is built using a custom pure-Java software 3D rendering pipeline and Swing, adhering to a high-contrast dark aerospace aesthetic:
 
 - **Multi-Mode Center Tactical Display**:
-  - **🛰 3D SATELLITE MODEL**: Full 3D shaded polygon mesh with interactive mouse orbit/drag, zoom, directional lighting, and 3D-to-2D projected telemetry callouts.
-  - **🌍 ORBIT GROUND TRACK & RADAR**: 2D equirectangular world map tracking the satellite's inclined orbital trajectory, sub-satellite position, day/night equator, and Deep Space Network (DSN) ground stations (Goldstone, Madrid, Canberra) with communication coverage cones.
+  - **🛰 3D SPACECRAFT**: Full shaded model with interactive mouse orbit/drag, zoom, directional lighting, and clickable system callouts.
+  - **🚀 2D SPACECRAFT**: A large, detailed spacecraft illustration in orbit, with the flight bus, segmented solar wings, high-gain dish, thermal radiators, attitude ring and propulsion plume highlighted by live system health.
+  - **🌍 ORBIT MAP**: Equirectangular Earth map tracking spacecraft position and ground-station coverage; the moving map marker shows the spacecraft's hull, solar wings, dish and engine.
+  - **🧩 OOP GUIDE**: Interactive-friendly visual guide to classes, objects, fields, methods, overloaded constructors, encapsulation, abstraction, inheritance, polymorphism and object relationships. The polymorphism example updates with live sensor readings.
   - **📊 TACTICAL COCKPIT GAUGES**: Circular radial dial meters (Power Bus, Core Temp, Uplink Signal, Gyro Drift) and an overall Platform Health Score (0–100%) that makes status instantly readable to any outsider.
 - **AI Flight Director & 60-Second Guided Viva Tour**:
   - Real-time plain-English briefing translating raw telemetry into clear human narratives.
   - One-click `[ ★ 60-SEC VIVA TOUR ]` button that automatically steps through the entire presentation story (Nominal -> Fault Injection -> Warning Detection -> Critical Red Alert -> Automated Safe Mode Recovery -> Nominal restoration) with on-screen narration.
 - **Synthesized Sci-Fi Audio Synthesizer**: Pure Java in-memory waveform sound effects (`javax.sound.sampled`) producing tactile UI clicks, telemetry beeps, warning chirps, emergency critical klaxons, and safe mode recovery chimes with a one-click `[ 🔊 AUDIO ]` toggle.
 - **Flight Operations Header (North)**: Title branding, live UTC clock, Mission Elapsed Time (MET `T+ HH:MM:SS`), orbital flight dynamics strip (Altitude, Velocity, Inclination, Apogee/Perigee), and a pulsing hexagonal `StatusBanner`.
-- **Tactical Controls & Fault Injector (West)**: Scenario cards, Start/Pause/Reset playback controls, speed slider (1–10 ticks/sec), live Subsystem Health LED matrix, and manual anomaly injector.
+- **Build-Your-Own Mission Controls (West)**: Starts with beginner-friendly controls for core temperature, power-bus voltage, antenna signal, and spacecraft spin. Set readings directly, see normal/warning/critical feedback, and watch the live dashboard respond; scripted scenarios and manual fault injection remain available on the Scenarios tab.
 - **Live Telemetry & Spectrum Chart (East Top)**: Real-time telemetry line chart with soft glowing line effects, shaded area gradient fill, statistical badges (MIN, MAX, AVG), dashed warning threshold line, and interactive mouse crosshair inspection.
 - **Real-Time Telemetry Matrix (East Bottom)**: Real-time readings table with icon badges, engineering units, alternating high-tech row styling, and click-to-focus integration.
 - **Mission Anomaly Console (South)**: Terminal-style monospaced log recording anomalies, autonomous recovery commands, with live counters for total alerts, warnings, and criticals.
+
+The **OOP GUIDE** view connects each concept to real project classes: `Sensor` and its concrete sensor subclasses, `Spacecraft` and `Subsystem`, `MissionControl`, immutable simulation snapshots, and `Anomaly`. This is a learning aid alongside the implementation; design patterns are summarized in the guide footer.
 
 ---
 

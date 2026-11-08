@@ -1,4 +1,4 @@
-# OrbitalIX: Mission Control for a Satellite's Health
+# OrbitalIX: Mission Control for a Spacecraft's Health
 
 > MASTER CONTEXT FILE. Give this file to the AI at the start of EVERY session.
 > Then the prompt is just: "Read PROJECT_CONTEXT.md and run the project."
@@ -126,14 +126,18 @@ Look and feel: **dark mission-control theme.**
 - `Theme` (all colours and fonts in one place: background #0B1020, panels #121A33, text #E0E6FF,
   cyan accent #00E5FF, green #00E676, amber #FFB300, red #FF1744, grey for FAILED;
   Segoe UI for labels, Consolas/Monospaced for numbers and logs)
-- `MainWindow` (JFrame). Layout: NORTH header, WEST controls, CENTER satellite, EAST chart + table, SOUTH alerts
+- `MainWindow` (JFrame). Layout: NORTH header, WEST controls, CENTER spacecraft/map/OOP/health views, EAST chart + table, SOUTH alerts
 - Header: title "ORBITALIX · MISSION CONTROL", mission clock `T+ 00:03:21`, `StatusBanner`
 - `StatusBanner` (big rounded label: NOMINAL green, WARNING amber, SAFE MODE blue, CRITICAL red and pulsing)
-- `SatellitePanel` (**the showpiece**, drawn with Graphics2D): twinkling starfield background and a drawn
-  satellite in the middle: central body = Thermal, two solar panels left/right = Power,
+- `SatellitePanel` (**the 3D showpiece**, drawn with Graphics2D): twinkling starfield background and a drawn
+  spacecraft in the middle: central body = Thermal, two solar panels left/right = Power,
   antenna dish on top = Communication, gyro ring at the bottom = Attitude.
   Each part glows green / amber / red by its subsystem's health; CRITICAL parts pulse; FAILED parts are grey.
   Each part has a small label (name + key reading). Clicking a part selects that subsystem for the chart.
+- `Spacecraft2DPanel`: large labeled 2D spacecraft illustration with live health highlights for the bus,
+  solar arrays, antenna dish, thermal radiator, attitude ring, and propulsion.
+- `OopConceptsPanel`: beginner-friendly visual guide to classes and objects, fields and methods, overloaded
+  constructors, encapsulation, abstraction, inheritance, live polymorphism, composition, aggregation, and association.
 - `ControlPanel` (scenario "cards" as buttons, Start / Pause / Reset, speed slider,
   fault injection: subsystem dropdown + fault type dropdown + "Inject fault" button)
 - `TelemetryPanel` (JTable: subsystem, sensor, value, unit, status; rows coloured by status)
@@ -246,12 +250,12 @@ architecture; class diagram; patterns; SOLID; sequence diagram; GUI screenshot; 
 conclusion and future work.
 
 ## HANDOFF STATE (AI: keep this updated. The next AI reads it first.)
-- Last updated by: Antigravity, 2026-11-09 01:51
-- Currently in progress: A1 through A7 completed! Tasks A ready for presentation and viva.
+- Last updated by: Copilot, 2026-11-09
+- Currently in progress: A1 through A7 completed; the beginner-friendly custom mission-condition builder, detailed 2D spacecraft view, and live OOP concepts guide are implemented and verified.
 - Next step: A8 (Viva preparation) and B tasks (report, diagrams, PPT) remain for humans/team.
 - Compile command: `javac --release 17 -encoding UTF-8 -d out @sources.txt` after building sources.txt with forward-slash quoted paths (see compile.bat). Maven is not installed.
 - Run commands: GUI: `java -cp out com.orbitalix.app.Main`   Console: `java -cp out com.orbitalix.app.Main --cli`
-- Decisions made: Complete system built across sensor, model, detection, alert, state, recovery, simulation, gui, and util packages. Full Swing/Java2D mission control dashboard with twinkling starfield, glowing/pulsing components, live charts, telemetry tables, alert log, scenario player, and manual fault injector. All 6 scenarios tested and passing in both GUI and CLI. Full README.md documentation and 8 real high-resolution screenshots generated in docs/screenshots/.
+- Decisions made: Complete system built across sensor, model, detection, alert, state, recovery, simulation, gui, and util packages. Full Swing/Java2D mission-control dashboard with twinkling starfield, glowing/pulsing components, live charts, telemetry tables, alert log, and manual fault injector. The GUI opens on editable temperature, power, signal, and spin controls with severity feedback; scripted scenarios remain available on a separate tab. The dashboard includes an easily recognized spacecraft illustration in both 2D and 3D, plus a live OOP Concepts view tied to project classes and telemetry. All 6 scenarios tested and passing in both GUI and CLI. Full README.md documentation and 8 real high-resolution screenshots generated in docs/screenshots/.
 - Known issues: none.
 
 ## Progress log
@@ -263,3 +267,6 @@ conclusion and future work.
 2026-11-09 A5 done: GUI core (Theme, Header, StatusBanner, ControlPanel, TelemetryPanel, LiveChartPanel, AlertLogPanel, GuiAlertListener).
 2026-11-09 A6 done: SatellitePanel (Java2D starfield, glowing parts, pulse animation, interactive component selection).
 2026-11-09 A7 done: full integration, all 6 scenarios verified, README.md written, and 8 screenshots captured.
+2026-11-09 Custom mission-condition builder done: direct telemetry controls, beginner guidance, severity feedback, reset behavior, and verification.
+2026-11-09 2D spacecraft view done: recognizable orbit-map spacecraft icon, clearer first-time view labels, tooltips, and README update.
+2026-11-09 OOP guide and spacecraft illustration done: live concept guide and a detailed, subsystem-highlighted 2D spacecraft view.

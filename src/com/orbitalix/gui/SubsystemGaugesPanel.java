@@ -78,7 +78,7 @@ public class SubsystemGaugesPanel extends JPanel implements TickListener {
         g2.drawRoundRect(w / 2 - 130, 28, 260, 48, 12, 12);
 
         g2.setFont(Theme.FONT_TITLE);
-        String scoreText = String.format("FLEET HEALTH: %d%%", overallScore);
+        String scoreText = String.format("SPACECRAFT HEALTH: %d%%", overallScore);
         FontMetrics fm = g2.getFontMetrics();
         g2.drawString(scoreText, w / 2 - fm.stringWidth(scoreText) / 2, 54);
 
