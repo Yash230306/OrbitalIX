@@ -1,7 +1,11 @@
+target/
 out/
-logs/
 sources.txt
 *.class
+*.log
+logs/
 .idea/
-*.iml
 .vscode/
+*.iml
+Thumbs.db
+.DS_Store

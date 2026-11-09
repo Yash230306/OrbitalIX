@@ -1,3 +1,5 @@
-#!/usr/bin/env sh
+#!/bin/sh
+set -eu
 cd "$(dirname "$0")"
-java -cp out com.orbitalix.app.Main "$@"
+./compile.sh
+exec java -cp out com.orbitalix.app.Main "$@"

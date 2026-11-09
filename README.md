@@ -1,5 +1,26 @@
 # OrbitalIX: Autonomous Satellite Health & Telemetry Mission Control
 
+## A1-A16 Mission Suite Branch
+
+This branch adds the expanded mission-suite implementation in `src/main/java`. The earlier application source under
+`src/com` and its documentation/screenshots are retained from `master`; the build scripts intentionally compile only
+`src/main/java` to avoid duplicate package entry points.
+
+### Run this branch
+
+```bat
+compile.bat
+run.bat
+run.bat --cli
+run.bat --selftest
+run.bat --screenshots out\screenshots
+```
+
+The Java 17 module includes the immutable controller API, seeded scenario simulation, autonomy modes, crew and resource
+telemetry, replay/preview, report export, a themed Swing control-room canvas, and headless rendering checks. The expanded
+brief's individually separated sensor/fault/action packages and some fully interactive GUI widgets remain unfinished;
+the simulator and UI are a consolidated baseline rather than a complete implementation of every detailed requirement.
+
 [![Java Version](https://img.shields.io/badge/Java-17%2B-blue.svg)](https://openjdk.org/)
 [![GUI](https://img.shields.io/badge/GUI-Swing%20%2B%20Java2D-green.svg)]()
 [![Architecture](https://img.shields.io/badge/Architecture-MVC%20%2B%20Observer%20%2B%20Strategy-orange.svg)]()
