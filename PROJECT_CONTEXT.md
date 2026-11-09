@@ -591,15 +591,19 @@ the 15 failures; the suite; patterns (2 slides); SOLID; autonomy levels and the 
 GUI screenshots (3 slides); demo scenarios and results; testing; conclusion and future work.
 
 ## HANDOFF STATE (AI: keep this updated. The next AI reads it first.)
-- Last updated by: (tool/model name, date and time)
-- Repo: (GitHub URL, never credentials) and push status (CONFIGURED / NOT CONFIGURED / last push time)
-- Release reached: (none / R1 / R2 / R3 / R4)
-- Currently in progress: (task id, and exactly what is half-done)
-- Next step: (the exact next thing to do)
-- Compile command: (fill in during A1)
-- Run commands: GUI: (fill in)   Console: (fill in)   Selftest: (fill in)   Screenshots: (fill in)
-- Decisions made: (e.g. Maven or plain javac, anything chosen without asking)
-- Known issues: (anything broken or unfinished)
+- Last updated by: Copilot SDK in VS Code, 2026-11-10
+- Repo: No GitHub URL provided; push status NOT CONFIGURED (GitHub CLI is not authenticated)
+- Release reached: none
+- Currently in progress: A1-A16 requested; runnable Java foundation, simulation, CLI, GUI canvas, and screenshot matrix exist, but several detailed package/class requirements in sections 4-9 remain consolidated or simplified.
+- Next step: Authenticate with `gh auth login`; then create the private `orbitalix` remote and push the local branch. Continue the missing individually modeled sensor, fault, action, detection, autonomy, audio, and interactive-view components before claiming the release gates.
+- Compile command: `.\compile.bat`
+- Run commands: GUI: `.\run.bat`   Console: `.\run.bat --cli`   Selftest: `.\run.bat --selftest`   Screenshots: `.\run.bat --screenshots out\screenshots`
+- Decisions made: plain `javac --release 17` because Maven is unavailable; no external libraries.
+- Known issues: GitHub account access is unavailable in this session. The implementation is a working, tested baseline, not a complete realization of every class and visual behavior specified in A1-A16.
 
 ## Progress log
 (AI: append one line per finished task, format `YYYY-MM-DD A1 done: <what exists now>`)
+- 2026-11-10 A1 foundation: local Git repository, Java 17 compile/run scripts, immutable API records, configuration builder/enums, utilities, and base exceptions.
+- 2026-11-10 A7 baseline: deterministic simulation/controller, scenario matrix, console commands, history/replay snapshots, reports, and self-test are implemented in a consolidated engine.
+- 2026-11-10 A14 baseline: ten themed Java2D views, control-room shell, CLI controls, settings, exports, and headless screenshot harness are implemented with simplified interactions/rendering.
+- 2026-11-10 A15-A16 baseline: 108 scenario/difficulty/autonomy runs and API regression checks pass; all 80 view/theme/resolution screenshots render and pass nonblank checks.

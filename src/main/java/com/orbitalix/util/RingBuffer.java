@@ -2,6 +2,8 @@ package com.orbitalix.util;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /** Generic bounded history using a circular array; iteration is oldest to newest. */
 public final class RingBuffer<T> implements Iterable<T> {
@@ -23,6 +25,12 @@ public final class RingBuffer<T> implements Iterable<T> {
 
     public int size() { return size; }
     public int capacity() { return values.length; }
+    public void clear() {
+        java.util.Arrays.fill(values, null);
+        start = 0;
+        size = 0;
+    }
+    public Stream<T> stream() { return StreamSupport.stream(spliterator(), false); }
     public T get(int index) {
         if (index < 0 || index >= size) throw new IndexOutOfBoundsException(index);
         @SuppressWarnings("unchecked") T value = (T) values[(start + index) % values.length];

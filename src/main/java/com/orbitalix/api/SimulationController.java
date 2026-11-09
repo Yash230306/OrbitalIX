@@ -11,6 +11,8 @@ public interface SimulationController {
     void loadScenario(int scenarioIndex);
     void start();
     void pause();
+    void tick();
+    boolean isRunning();
     void reset();
     void setSpeed(int ticksPerSecond);
     void setThrottle(int percent);
@@ -29,7 +31,10 @@ public interface SimulationController {
     String executeCommand(String line);
     String generateReportHtml();
     String exportTelemetryCsv();
+    String getSetting(String key, String fallback);
+    void setSetting(String key, String value);
     void addTickListener(TickListener listener);
     void addEventListener(MissionEventListener listener);
     SimulationSnapshot snapshot();
+    SimulationController fork();
 }
