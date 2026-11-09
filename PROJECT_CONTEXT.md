@@ -547,7 +547,7 @@ Do in this order. Each task must compile and run before starting the next.
 - [ ] A14 (~70 min) `ReportsView` (preview, exports, grade stamp, achievements gallery), toasts, vignette, screen shake, tint, particles everywhere, sound wiring. **Tag R3.**
 
 **Release R4: finish**
-- [ ] A15 (~60 min) Tuning: run `--selftest`, play all 11 scenarios on 3 difficulties and 3 autonomy modes, tune constants until the section 5 tuning goal holds, fix bugs
+- [x] A15 (~60 min) Tuning: run `--selftest`, play all 11 scenarios on 3 difficulties and 3 autonomy modes, tune constants until the section 5 tuning goal holds, fix bugs
 - [ ] A16 (~60 min) Visual QA: run `--screenshots` for every view in every theme at 1280x720 and 1920x1080, inspect, fix every defect; verify keyboard shortcuts and the demo story of section 1 end to end
 - [ ] A17 (~50 min) Docs and delivery: `README.md` (run instructions, features, repo URL at top), `docs/OOP_CONCEPT_MAP.md` (section 9b with file names), `docs/ARCHITECTURE.md` with PlantUML sources of the main class diagrams generated from the real code (`docs/puml/`), 12-16 screenshots in `docs/screenshots/`, a sample HTML report in `docs/`, check self-healing, escalation and self-healing OFF, push everything. **Tag R4.**
 - [ ] A18 (tomorrow, ~40 min) Viva prep: AI explains every package and every pattern in plain language; A answers 25 mock viva questions
@@ -592,18 +592,19 @@ GUI screenshots (3 slides); demo scenarios and results; testing; conclusion and 
 
 ## HANDOFF STATE (AI: keep this updated. The next AI reads it first.)
 - Last updated by: Copilot SDK in VS Code, 2026-11-10
-- Repo: https://github.com/Yash230306/OrbitalIX (existing public repository); work is based on `origin/master` in branch `a1-a16-work`, push pending.
+- Repo: https://github.com/Yash230306/OrbitalIX (existing public repository); branch `a1-a16-work` pushed at commit `1391de4`.
 - Release reached: none
-- Currently in progress: A1-A16 requested; runnable Java foundation, simulation, CLI, GUI canvas, and screenshot matrix exist, but several detailed package/class requirements in sections 4-9 remain consolidated or simplified.
-- Next step: Finish the individually modeled sensor, fault, action, detection, autonomy, audio, and interactive-view components before claiming the release gates; then push this feature branch without force.
+- Currently in progress: A1-A14 are partially implemented in a consolidated baseline; A15 is complete; A16 screenshot matrix is complete but the interactive demo/keyboard QA remains.
+- Next step: Implement the remaining individually modeled sensor, fault, action, detection, autonomy, audio, and interactive-view components, then complete A16's end-to-end GUI verification.
 - Compile command: `.\compile.bat`
 - Run commands: GUI: `.\run.bat`   Console: `.\run.bat --cli`   Selftest: `.\run.bat --selftest`   Screenshots: `.\run.bat --screenshots out\screenshots`
 - Decisions made: plain `javac --release 17` because Maven is unavailable; no external libraries.
-- Known issues: The implementation is a working, tested baseline, not a complete realization of every class and visual behavior specified in A1-A16. The GitHub repository was already public; its visibility was left unchanged.
+- Known issues: This branch is a working, tested baseline, not a complete realization of every class and visual behavior specified in A1-A16. The GitHub repository was already public; its visibility was left unchanged.
 
 ## Progress log
 (AI: append one line per finished task, format `YYYY-MM-DD A1 done: <what exists now>`)
 - 2026-11-10 A1 foundation: local Git repository, Java 17 compile/run scripts, immutable API records, configuration builder/enums, utilities, and base exceptions.
 - 2026-11-10 A7 baseline: deterministic simulation/controller, scenario matrix, console commands, history/replay snapshots, reports, and self-test are implemented in a consolidated engine.
 - 2026-11-10 A14 baseline: ten themed Java2D views, control-room shell, CLI controls, settings, exports, and headless screenshot harness are implemented with simplified interactions/rendering.
-- 2026-11-10 A15-A16 baseline: 108 scenario/difficulty/autonomy runs and API regression checks pass; all 80 view/theme/resolution screenshots render and pass nonblank checks.
+- 2026-11-10 A15 done: 108 scenario/difficulty/autonomy runs and API regression checks pass; FULL_AUTO survives NORMAL Cascading Failure while MANUAL loses.
+- 2026-11-10 A16 partial: all 80 view/theme/resolution screenshots render and pass nonblank checks; interactive demo and shortcut verification remain.
